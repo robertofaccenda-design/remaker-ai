@@ -795,6 +795,41 @@
       font-family: monospace;
     }
 
+    /* ── Publish buttons ── */
+    .publish-label {
+      font-size: 0.72rem;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+    .publish-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn-publish {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+      color: var(--cream);
+    }
+    .btn-publish:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .btn-subito:hover  { border-color: #e84118; color: #e84118; }
+    .btn-vinted:hover  { border-color: #09b1ba; color: #09b1ba; }
+    .btn-meta:hover    { border-color: #1877f2; color: #1877f2; }
+    .btn-ebay:hover    { border-color: #e53238; color: #e53238; }
+
     /* ── History ── */
     .history-section {
       max-width: 640px;
@@ -1073,13 +1108,28 @@
           <span class="listing-price-val" id="listingPrice">—</span>
         </div>
         <div class="hashtags" id="hashtags"></div>
+        <div class="publish-label">Pubblica su</div>
+        <div class="publish-btns">
+          <button class="btn-publish btn-subito" onclick="publishTo('subito')">
+            <img src="https://www.subito.it/favicon.ico" width="14" height="14" onerror="this.style.display='none'"> Subito.it
+          </button>
+          <button class="btn-publish btn-vinted" onclick="publishTo('vinted')">
+            <img src="https://www.vinted.it/favicon.ico" width="14" height="14" onerror="this.style.display='none'"> Vinted
+          </button>
+          <button class="btn-publish btn-meta" onclick="publishTo('meta')">
+            <img src="https://www.facebook.com/favicon.ico" width="14" height="14" onerror="this.style.display='none'"> Marketplace
+          </button>
+          <button class="btn-publish btn-ebay" onclick="publishTo('ebay')">
+            <img src="https://www.ebay.it/favicon.ico" width="14" height="14" onerror="this.style.display='none'"> eBay
+          </button>
+        </div>
       </div>
 
     </div>
 
     <!-- Footer -->
     <footer>
-      <strong>ReMaker AI</strong> — Test Alpha &nbsp;·&nbsp; Powered by Gemini 1.5 Flash
+      <strong>ReMaker AI</strong> — Test Alpha &nbsp;·&nbsp; Powered by Gemini 3.5 Flash
     </footer>
 
   </div>
@@ -1412,6 +1462,28 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
 
     function escHtml(str) {
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Publish ─────────────────────────────────────────────────────────
+    const MARKETPLACE_URLS = {
+      subito:  'https://www.subito.it/annunci-italia/vendita/usato/',
+      vinted:  'https://www.vinted.it/items/new',
+      meta:    'https://www.facebook.com/marketplace/create/item',
+      ebay:    'https://www.ebay.it/sl/sell'
+    };
+
+    async function publishTo(market) {
+      // 1. Copia il testo negli appunti
+      try {
+        await navigator.clipboard.writeText(currentListingText);
+      } catch {
+        // fallback silenzioso — il testo potrebbe non essere copiato
+      }
+      // 2. Apri il marketplace
+      window.open(MARKETPLACE_URLS[market], '_blank', 'noopener');
+      // 3. Mostra toast con istruzione
+      const names = { subito: 'Subito.it', vinted: 'Vinted', meta: 'Facebook Marketplace', ebay: 'eBay' };
+      showToast(`✓ Testo copiato — incolla su ${names[market]}`);
     }
 
     // ── History ─────────────────────────────────────────────────────────
