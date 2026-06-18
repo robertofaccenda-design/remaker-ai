@@ -1343,34 +1343,43 @@
 Analizza ${hasImage ? "l'oggetto in questa immagine" : ""}${hasImage && hasText ? " e considera questa descrizione aggiuntiva" : ""}${!hasImage && hasText ? "questo oggetto descritto" : ""}.
 ${hasText ? `Descrizione: ${textVal}` : ""}
 
-Rispondi SOLO con un oggetto JSON valido, nessun testo fuori. Ogni stringa max 10 parole.
+Rispondi SOLO con righe nel formato CHIAVE=VALORE, una per riga. Nessun testo extra, nessun markdown.
 
-Usa ESATTAMENTE questa struttura (sostituisci i valori di esempio):
-{
-"o":"nome oggetto",
-"e":"emoji",
-"c":"categoria",
-"k":"ottima",
-"vn":10,
-"vx":30,
-"vt":"nota prezzo mercato italiano",
-"i0t":"titolo idea 1","i0d":"descrizione idea 1","i0c":"vendi",
-"i1t":"titolo idea 2","i1d":"descrizione idea 2","i1c":"dona",
-"i2t":"titolo idea 3","i2d":"descrizione idea 3","i2c":"trasforma",
-"i3t":"titolo idea 4","i3d":"descrizione idea 4","i3c":"ripara",
-"i4t":"titolo idea 5","i4d":"descrizione idea 5","i4c":"vendi",
-"i5t":"titolo idea 6","i5d":"descrizione idea 6","i5c":"dona",
-"at":"titolo annuncio SEO",
-"ad":"testo annuncio persuasivo",
-"ap":20,
-"ah":"hashtag1 hashtag2 hashtag3 hashtag4 hashtag5",
-"rq":"query ricerca ricambi accessori",
-"r1":"ricambio o accessorio 1",
-"r2":"ricambio o accessorio 2",
-"r3":"ricambio o accessorio 3"
-}
+o=nome oggetto
+e=emoji singola
+c=categoria
+k=ottima
+vn=numero intero minimo prezzo euro
+vx=numero intero massimo prezzo euro
+vt=breve nota mercato italiano
+i0t=titolo idea 1
+i0d=descrizione breve idea 1
+i0c=vendi
+i1t=titolo idea 2
+i1d=descrizione breve idea 2
+i1c=dona
+i2t=titolo idea 3
+i2d=descrizione breve idea 3
+i2c=trasforma
+i3t=titolo idea 4
+i3d=descrizione breve idea 4
+i3c=ripara
+i4t=titolo idea 5
+i4d=descrizione breve idea 5
+i4c=vendi
+i5t=titolo idea 6
+i5d=descrizione breve idea 6
+i5c=dona
+at=titolo annuncio SEO ottimizzato
+ad=testo annuncio persuasivo 2-3 frasi
+ap=numero intero prezzo consigliato euro
+ah=hashtag1 hashtag2 hashtag3 hashtag4 hashtag5
+rq=query di ricerca per ricambi e accessori
+r1=nome ricambio o accessorio specifico 1
+r2=nome ricambio o accessorio specifico 2
+r3=nome ricambio o accessorio specifico 3
 
-Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona, trasforma, ripara. Contesto italiano.`;
+Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona, trasforma, ripara. Contesto italiano. Non aggiungere mai simboli = nei valori.`;
 
       parts.push({ text: prompt });
 
@@ -1382,7 +1391,7 @@ Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, don
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ parts }],
-              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048, responseMimeType: 'application/json' }
+              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
             })
           }
         );
@@ -1407,36 +1416,17 @@ Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, don
           throw new Error(feedback ? `Richiesta bloccata: ${feedback}` : `Risposta vuota dal modello (finishReason: ${finishReason})`);
         }
 
-        let parsed;
-        try {
-          // Tentativo 1: parse diretto (responseMimeType garantisce JSON valido)
-          parsed = JSON.parse(rawText);
-        } catch(e1) {
-          try {
-            // Tentativo 2: estrai il blocco JSON e fai escape dei newline letterali nelle stringhe
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) throw new Error('Nessun blocco JSON trovato');
-            let s = jsonMatch[0];
-            let result = '', inString = false, escaped = false;
-            for (let i = 0; i < s.length; i++) {
-              const ch = s[i];
-              if (escaped) { result += ch; escaped = false; continue; }
-              if (ch === '\\') { result += ch; escaped = true; continue; }
-              if (ch === '"') { inString = !inString; result += ch; continue; }
-              if (inString && ch.charCodeAt(0) < 32) {
-                if (ch === '\n') result += '\\n';
-                else if (ch === '\r') result += '\\r';
-                else if (ch === '\t') result += '\\t';
-                continue;
-              }
-              result += ch;
-            }
-            parsed = JSON.parse(result);
-          } catch(e2) {
-            console.warn('JSON parse fallback error:', e2.message, '\nRaw:', rawText.slice(0, 300));
-            throw new Error(`Risposta AI malformata: ${e2.message}`);
+        // Parser chiave=valore — nessun rischio di JSON errors
+        const parsed = {};
+        rawText.split('\n').forEach(line => {
+          const eq = line.indexOf('=');
+          if (eq > 0) {
+            const key = line.slice(0, eq).trim();
+            const val = line.slice(eq + 1).trim();
+            if (key) parsed[key] = val;
           }
-        }
+        });
+        if (!parsed.o && !parsed.e) throw new Error('Risposta non riconosciuta. Riprova.');
         showScan(false);
         renderResults(parsed);
         saveToHistory(parsed);
@@ -1469,12 +1459,14 @@ Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, don
       const condMap = { ottima:'Ottima', buona:'Buona', discreta:'Discreta', da_riparare:'Da riparare' };
       document.getElementById('objCond').textContent = condMap[d.k] || d.k || '—';
 
-      // Value
-      document.getElementById('valMin').textContent = d.vn != null ? `€${d.vn}` : '—';
-      document.getElementById('valMax').textContent = d.vx != null ? `€${d.vx}` : '—';
+      // Value (vn/vx sono stringhe dal parser k=v, convertiamo)
+      const vn = parseInt(d.vn) || 0;
+      const vx = parseInt(d.vx) || 0;
+      document.getElementById('valMin').textContent = vn ? `€${vn}` : '—';
+      document.getElementById('valMax').textContent = vx ? `€${vx}` : '—';
       document.getElementById('valNote').textContent = d.vt || '';
       setTimeout(() => {
-        const pct = Math.min(((d.vx || 0) / 500) * 100, 100);
+        const pct = Math.min((vx / 500) * 100, 100);
         document.getElementById('valBar').style.width = pct + '%';
       }, 100);
 
@@ -1498,7 +1490,7 @@ Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, don
       // Listing
       document.getElementById('listingTitle').textContent = d.at || '—';
       document.getElementById('listingBody').textContent = d.ad || '—';
-      document.getElementById('listingPrice').textContent = d.ap != null ? `€${d.ap}` : '—';
+      document.getElementById('listingPrice').textContent = d.ap ? `€${parseInt(d.ap)||d.ap}` : '—';
 
       const hashWrap = document.getElementById('hashtags');
       hashWrap.innerHTML = '';
