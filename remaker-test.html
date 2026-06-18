@@ -1165,9 +1165,24 @@ Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto ita
         }
 
         const data = await res.json();
+        console.log('Gemini raw response:', JSON.stringify(data).slice(0, 500));
+
+        // Controlla blocco safety o risposta vuota
+        const finishReason = data.candidates?.[0]?.finishReason;
+        if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
+          throw new Error('Contenuto bloccato dai filtri di sicurezza. Prova con una descrizione diversa.');
+        }
+
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonText = rawText.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
-        const parsed = JSON.parse(jsonText);
+        if (!rawText) {
+          const feedback = data.promptFeedback?.blockReason;
+          throw new Error(feedback ? `Richiesta bloccata: ${feedback}` : `Risposta vuota dal modello (finishReason: ${finishReason})`);
+        }
+
+        // Estrai JSON anche se il modello aggiunge testo intorno
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error(`Formato risposta non riconosciuto: ${rawText.slice(0, 100)}`);
+        const parsed = JSON.parse(jsonMatch[0]);
         showScan(false);
         renderResults(parsed);
 
@@ -1184,8 +1199,6 @@ Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto ita
           msg = 'API Key non valida. Controlla le impostazioni (⚙).';
         } else if (msg.includes('QUOTA') || msg.includes('quota') || msg.includes('429')) {
           msg = 'Quota API esaurita. Riprova tra qualche minuto.';
-        } else if (msg.includes('JSON') || msg.includes('json') || msg.includes('SyntaxError')) {
-          msg = 'Risposta AI non valida. Riprova.';
         }
         showError('⚠ ' + msg);
       }
