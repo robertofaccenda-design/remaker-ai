@@ -1343,12 +1343,34 @@
 Analizza ${hasImage ? "l'oggetto in questa immagine" : ""}${hasImage && hasText ? " e considera questa descrizione aggiuntiva" : ""}${!hasImage && hasText ? "questo oggetto descritto" : ""}.
 ${hasText ? `Descrizione: ${textVal}` : ""}
 
-Rispondi SOLO con JSON valido. Nessun testo fuori dal JSON. Stringhe brevi: max 12 parole per campo.
+Rispondi SOLO con un oggetto JSON valido, nessun testo fuori. Ogni stringa max 10 parole.
 
-Struttura JSON richiesta:
-{"oggetto":"nome oggetto","emoji":"emoji","categoria":"categoria","condizione_stimata":"ottima","stima_valore":{"min":0,"max":0,"note":"breve nota mercato"},"idee_riuso":[{"titolo":"titolo","descrizione":"descrizione breve","difficolta":"facile","tipo":"vendi"}],"annuncio":{"titolo":"titolo annuncio","descrizione":"testo annuncio breve","prezzo_consigliato":0,"hashtag":["tag1","tag2","tag3","tag4","tag5"]},"ricambi":{"query_principale":"query di ricerca in italiano per trovare ricambi o accessori","suggerimenti":[{"etichetta":"nome ricambio o accessorio","query":"query specifica di ricerca"}]}}
+Usa ESATTAMENTE questa struttura (sostituisci i valori di esempio):
+{
+"o":"nome oggetto",
+"e":"emoji",
+"c":"categoria",
+"k":"ottima",
+"vn":10,
+"vx":30,
+"vt":"nota prezzo mercato italiano",
+"i0t":"titolo idea 1","i0d":"descrizione idea 1","i0c":"vendi",
+"i1t":"titolo idea 2","i1d":"descrizione idea 2","i1c":"dona",
+"i2t":"titolo idea 3","i2d":"descrizione idea 3","i2c":"trasforma",
+"i3t":"titolo idea 4","i3d":"descrizione idea 4","i3c":"ripara",
+"i4t":"titolo idea 5","i4d":"descrizione idea 5","i4c":"vendi",
+"i5t":"titolo idea 6","i5d":"descrizione idea 6","i5c":"dona",
+"at":"titolo annuncio SEO",
+"ad":"testo annuncio persuasivo",
+"ap":20,
+"ah":"hashtag1 hashtag2 hashtag3 hashtag4 hashtag5",
+"rq":"query ricerca ricambi accessori",
+"r1":"ricambio o accessorio 1",
+"r2":"ricambio o accessorio 2",
+"r3":"ricambio o accessorio 3"
+}
 
-Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi" fornisci 3 suggerimenti specifici (pezzi di ricambio, accessori compatibili, materiali di riparazione). Contesto italiano.`;
+Valori per "k": ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona, trasforma, ripara. Contesto italiano.`;
 
       parts.push({ text: prompt });
 
@@ -1440,76 +1462,66 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi
     // ── Render results ───────────────────────────────────────────────────
     function renderResults(d) {
       // Object
-      document.getElementById('objEmoji').textContent = d.emoji || '📦';
-      document.getElementById('objName').textContent = d.oggetto || '—';
-      document.getElementById('objCat').textContent = d.categoria || '—';
-      const condMap = { ottima: 'Ottima', buona: 'Buona', discreta: 'Discreta', 'da riparare': 'Da riparare' };
-      document.getElementById('objCond').textContent = condMap[d.condizione_stimata] || d.condizione_stimata || '—';
+      // Schema flat: chiavi corte per minimizzare errori JSON
+      document.getElementById('objEmoji').textContent = d.e || '📦';
+      document.getElementById('objName').textContent = d.o || '—';
+      document.getElementById('objCat').textContent = d.c || '—';
+      const condMap = { ottima:'Ottima', buona:'Buona', discreta:'Discreta', da_riparare:'Da riparare' };
+      document.getElementById('objCond').textContent = condMap[d.k] || d.k || '—';
 
       // Value
-      const sv = d.stima_valore || {};
-      document.getElementById('valMin').textContent = sv.min != null ? `€${sv.min}` : '—';
-      document.getElementById('valMax').textContent = sv.max != null ? `€${sv.max}` : '—';
-      document.getElementById('valNote').textContent = sv.note || '';
-      // Animate bar based on min/max ratio to a "reference" of €500
+      document.getElementById('valMin').textContent = d.vn != null ? `€${d.vn}` : '—';
+      document.getElementById('valMax').textContent = d.vx != null ? `€${d.vx}` : '—';
+      document.getElementById('valNote').textContent = d.vt || '';
       setTimeout(() => {
-        const pct = Math.min(((sv.max || 0) / 500) * 100, 100);
+        const pct = Math.min(((d.vx || 0) / 500) * 100, 100);
         document.getElementById('valBar').style.width = pct + '%';
       }, 100);
 
-      // Ideas
+      // Ideas — 6 item flat (i0..i5)
       const grid = document.getElementById('ideasGrid');
       grid.innerHTML = '';
-      (d.idee_riuso || []).forEach(idea => {
-        const diffDots = ['facile','media','avanzata'].map((l, i) => {
-          const lvl = ['facile','media','avanzata'].indexOf(idea.difficolta);
-          return `<div class="diff-dot ${i <= lvl ? 'active' : ''}"></div>`;
-        }).join('');
-
-        const tagClass = `tag-${idea.tipo || 'vendi'}`;
-        const tagLabel = { vendi:'Vendi', dona:'Dona', trasforma:'Trasforma', ripara:'Ripara' }[idea.tipo] || idea.tipo;
-
+      const tagLabel = { vendi:'Vendi', dona:'Dona', trasforma:'Trasforma', ripara:'Ripara' };
+      for (let i = 0; i < 6; i++) {
+        const t = d[`i${i}t`], desc = d[`i${i}d`], cat = d[`i${i}c`] || 'vendi';
+        if (!t) continue;
         grid.innerHTML += `
           <div class="idea-card">
             <div class="idea-top">
-              <div class="idea-title">${escHtml(idea.titolo)}</div>
-              <span class="tag-idea ${tagClass}">${tagLabel}</span>
+              <div class="idea-title">${escHtml(t)}</div>
+              <span class="tag-idea tag-${cat}">${tagLabel[cat] || cat}</span>
             </div>
-            <div class="idea-desc">${escHtml(idea.descrizione)}</div>
-            <div class="diff-dots">${diffDots}</div>
+            <div class="idea-desc">${escHtml(desc || '')}</div>
           </div>`;
-      });
+      }
 
       // Listing
-      const ann = d.annuncio || {};
-      document.getElementById('listingTitle').textContent = ann.titolo || '—';
-      document.getElementById('listingBody').textContent = ann.descrizione || '—';
-      document.getElementById('listingPrice').textContent =
-        ann.prezzo_consigliato != null ? `€${ann.prezzo_consigliato}` : '—';
+      document.getElementById('listingTitle').textContent = d.at || '—';
+      document.getElementById('listingBody').textContent = d.ad || '—';
+      document.getElementById('listingPrice').textContent = d.ap != null ? `€${d.ap}` : '—';
 
       const hashWrap = document.getElementById('hashtags');
       hashWrap.innerHTML = '';
-      (ann.hashtag || []).forEach(h => {
+      (d.ah || '').split(/\s+/).filter(Boolean).forEach(h => {
         const span = document.createElement('span');
         span.className = 'hashtag';
         span.textContent = h.startsWith('#') ? h : '#' + h;
         hashWrap.appendChild(span);
       });
 
-      currentListingText = `${ann.titolo}\n\n${ann.descrizione}\n\nPrezzo: €${ann.prezzo_consigliato}\n\n${(ann.hashtag||[]).map(h=>h.startsWith('#')?h:'#'+h).join(' ')}`;
+      currentListingText = `${d.at}\n\n${d.ad}\n\nPrezzo: €${d.ap}\n\n${(d.ah||'').split(/\s+/).filter(Boolean).map(h=>h.startsWith('#')?h:'#'+h).join(' ')}`;
 
-      // Ricambi & Accessori
+      // Ricambi & Accessori — campi flat r1/r2/r3
       const spareCard = document.getElementById('spareCard');
-      const rc = d.ricambi;
-      if (rc && (rc.query_principale || (rc.suggerimenti && rc.suggerimenti.length))) {
+      if (d.rq) {
         spareCard.style.display = 'block';
-        const queryPrincipale = rc.query_principale || d.oggetto + ' ricambi accessori';
-
-        // Chips suggerimenti — clic aggiorna i link con quella query
         const chipsWrap = document.getElementById('spareChips');
         chipsWrap.innerHTML = '';
-        const allSuggestions = [{ etichetta: 'Tutti i ricambi', query: queryPrincipale }, ...(rc.suggerimenti || [])];
-        allSuggestions.forEach((s, i) => {
+        const chips = [
+          { etichetta: 'Tutti', query: d.rq },
+          ...[d.r1, d.r2, d.r3].filter(Boolean).map(r => ({ etichetta: r, query: `${d.o} ${r}` }))
+        ];
+        chips.forEach((s, i) => {
           const chip = document.createElement('button');
           chip.className = 'spare-chip' + (i === 0 ? ' active' : '');
           chip.textContent = s.etichetta;
@@ -1520,8 +1532,7 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi
           };
           chipsWrap.appendChild(chip);
         });
-
-        renderSpareLinks(queryPrincipale);
+        renderSpareLinks(d.rq);
       } else {
         spareCard.style.display = 'none';
       }
