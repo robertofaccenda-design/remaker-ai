@@ -1308,13 +1308,28 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error(`Formato risposta non riconosciuto: ${rawText.slice(0, 100)}`);
 
-        // Repair JSON: rimuovi caratteri di controllo e trailing commas
+        // Repair JSON: escape caratteri literali dentro le stringhe
         function repairJSON(s) {
-          // Rimuovi caratteri di controllo (eccetto \n \r \t)
-          s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-          // Trailing commas prima di } o ]
-          s = s.replace(/,(\s*[}\]])/g, '$1');
-          return s;
+          let result = '';
+          let inString = false;
+          let escaped = false;
+          for (let i = 0; i < s.length; i++) {
+            const ch = s[i];
+            if (escaped) { result += ch; escaped = false; continue; }
+            if (ch === '\\') { result += ch; escaped = true; continue; }
+            if (ch === '"') { inString = !inString; result += ch; continue; }
+            if (inString) {
+              if (ch === '\n') { result += '\\n'; continue; }
+              if (ch === '\r') { result += '\\r'; continue; }
+              if (ch === '\t') { result += '\\t'; continue; }
+              // Rimuovi altri caratteri di controllo
+              if (ch.charCodeAt(0) < 32) continue;
+            }
+            result += ch;
+          }
+          // Trailing commas
+          result = result.replace(/,(\s*[}\]])/g, '$1');
+          return result;
         }
 
         let jsonStr = repairJSON(jsonMatch[0]);
@@ -1322,8 +1337,7 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
         try {
           parsed = JSON.parse(jsonStr);
         } catch(e) {
-          // Fallback: prova a estrarre solo i campi essenziali con regex
-          console.warn('JSON parse fallback, errore:', e.message);
+          console.warn('JSON parse error:', e.message, '\nJSON:', jsonStr.slice(1200, 1300));
           throw new Error(`Risposta AI malformata: ${e.message}`);
         }
         showScan(false);
