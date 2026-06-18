@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>ReMaker AI — Non buttare. Reinventa.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,12 +33,15 @@
 
     html { scroll-behavior: smooth; }
 
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
     body {
       font-family: 'Outfit', sans-serif;
       background: var(--bg);
       color: var(--cream);
       min-height: 100vh;
-      overflow-x: hidden;
       position: relative;
     }
 
@@ -574,7 +577,23 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    @media (max-width: 520px) { .ideas-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      .ideas-grid { grid-template-columns: 1fr; }
+      .wrap { padding: 0 16px 80px; }
+      .history-section { padding: 0 16px; }
+      .nav { padding: 0 16px; }
+      .hero h1 { font-size: 2rem; }
+      .mode-btns { gap: 6px; }
+      .btn-mode { padding: 8px 12px; font-size: 0.8rem; }
+      .publish-btns { gap: 6px; }
+      .btn-publish { padding: 6px 10px; font-size: 0.75rem; }
+      .obj-card { gap: 12px; }
+      .obj-emoji { font-size: 2.2rem; }
+      .listing-card { padding: 18px 16px; }
+      .value-card { padding: 18px 16px; }
+      .idea-card { padding: 14px 14px; }
+      .history-item { padding: 10px 12px; gap: 10px; }
+    }
 
     .idea-card {
       background: var(--surface);
@@ -933,6 +952,7 @@
       pointer-events: none;
       z-index: 100;
       white-space: nowrap;
+      max-width: calc(100vw - 48px);
     }
     .toast.show {
       opacity: 1;
