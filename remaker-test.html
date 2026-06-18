@@ -814,6 +814,61 @@
       font-family: monospace;
     }
 
+    /* ── Ricambi & Accessori ── */
+    .spare-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .spare-desc {
+      font-size: 0.83rem;
+      color: var(--cream-dim);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .spare-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .spare-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: var(--cream);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .spare-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .spare-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .spare-markets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .spare-market-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      color: var(--cream);
+      background: var(--surface2);
+      transition: all 0.2s;
+    }
+    .spare-market-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-color: var(--accent); color: var(--accent); }
+
     /* ── Publish buttons ── */
     .publish-label {
       font-size: 0.72rem;
@@ -1145,6 +1200,14 @@
         </div>
       </div>
 
+      <!-- Ricambi & Accessori -->
+      <div class="spare-card" id="spareCard" style="display:none">
+        <div class="card-label">🔧 Ricambi & Accessori</div>
+        <div class="spare-desc">Trova online pezzi di ricambio e accessori compatibili per questo oggetto.</div>
+        <div class="spare-chips" id="spareChips"></div>
+        <div class="spare-markets" id="spareMarkets"></div>
+      </div>
+
     </div>
 
     <!-- Footer -->
@@ -1285,9 +1348,9 @@ Usa solo apostrofi singoli nei valori testuali, NON virgolette doppie dentro le 
 Mantieni ogni campo di testo BREVE (max 15 parole per "note", max 20 parole per "descrizione" delle idee, max 25 parole per "descrizione" dell'annuncio).
 
 Struttura JSON richiesta:
-{"oggetto":"nome oggetto","emoji":"emoji","categoria":"categoria","condizione_stimata":"ottima","stima_valore":{"min":0,"max":0,"note":"breve nota mercato"},"idee_riuso":[{"titolo":"titolo","descrizione":"descrizione breve","difficolta":"facile","tipo":"vendi"}],"annuncio":{"titolo":"titolo annuncio","descrizione":"testo annuncio breve","prezzo_consigliato":0,"hashtag":["tag1","tag2","tag3","tag4","tag5"]}}
+{"oggetto":"nome oggetto","emoji":"emoji","categoria":"categoria","condizione_stimata":"ottima","stima_valore":{"min":0,"max":0,"note":"breve nota mercato"},"idee_riuso":[{"titolo":"titolo","descrizione":"descrizione breve","difficolta":"facile","tipo":"vendi"}],"annuncio":{"titolo":"titolo annuncio","descrizione":"testo annuncio breve","prezzo_consigliato":0,"hashtag":["tag1","tag2","tag3","tag4","tag5"]},"ricambi":{"query_principale":"query di ricerca in italiano per trovare ricambi o accessori","suggerimenti":[{"etichetta":"nome ricambio o accessorio","query":"query specifica di ricerca"}]}}
 
-Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto italiano.`;
+Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi" fornisci 3 suggerimenti specifici (pezzi di ricambio, accessori compatibili, materiali di riparazione). Contesto italiano.`;
 
       parts.push({ text: prompt });
 
@@ -1443,6 +1506,34 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
 
       currentListingText = `${ann.titolo}\n\n${ann.descrizione}\n\nPrezzo: €${ann.prezzo_consigliato}\n\n${(ann.hashtag||[]).map(h=>h.startsWith('#')?h:'#'+h).join(' ')}`;
 
+      // Ricambi & Accessori
+      const spareCard = document.getElementById('spareCard');
+      const rc = d.ricambi;
+      if (rc && (rc.query_principale || (rc.suggerimenti && rc.suggerimenti.length))) {
+        spareCard.style.display = 'block';
+        const queryPrincipale = rc.query_principale || d.oggetto + ' ricambi accessori';
+
+        // Chips suggerimenti — clic aggiorna i link con quella query
+        const chipsWrap = document.getElementById('spareChips');
+        chipsWrap.innerHTML = '';
+        const allSuggestions = [{ etichetta: 'Tutti i ricambi', query: queryPrincipale }, ...(rc.suggerimenti || [])];
+        allSuggestions.forEach((s, i) => {
+          const chip = document.createElement('button');
+          chip.className = 'spare-chip' + (i === 0 ? ' active' : '');
+          chip.textContent = s.etichetta;
+          chip.onclick = () => {
+            chipsWrap.querySelectorAll('.spare-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            renderSpareLinks(s.query);
+          };
+          chipsWrap.appendChild(chip);
+        });
+
+        renderSpareLinks(queryPrincipale);
+      } else {
+        spareCard.style.display = 'none';
+      }
+
       document.getElementById('inputSection').style.display = 'none';
       document.getElementById('results').classList.add('visible');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1496,6 +1587,24 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
 
     function escHtml(str) {
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Spare parts links ───────────────────────────────────────────────
+    function renderSpareLinks(query) {
+      const q = encodeURIComponent(query);
+      const markets = [
+        { name: 'Amazon.it',   url: `https://www.amazon.it/s?k=${q}`,                          icon: 'https://www.amazon.it/favicon.ico' },
+        { name: 'eBay.it',     url: `https://www.ebay.it/sch/i.html?_nkw=${q}`,               icon: 'https://www.ebay.it/favicon.ico' },
+        { name: 'iFixit',      url: `https://www.ifixit.com/Search?query=${q}`,                 icon: 'https://www.ifixit.com/favicon.ico' },
+        { name: 'AliExpress',  url: `https://www.aliexpress.com/wholesale?SearchText=${q}`,    icon: 'https://www.aliexpress.com/favicon.ico' },
+        { name: 'Subito.it',   url: `https://www.subito.it/annunci-italia/vendita/usato/?q=${q}`, icon: 'https://www.subito.it/favicon.ico' },
+      ];
+      const wrap = document.getElementById('spareMarkets');
+      wrap.innerHTML = markets.map(m => `
+        <a class="spare-market-btn" href="${m.url}" target="_blank" rel="noopener">
+          <img src="${m.icon}" width="14" height="14" onerror="this.style.display='none'"> ${m.name}
+        </a>
+      `).join('');
     }
 
     // ── Publish ─────────────────────────────────────────────────────────
