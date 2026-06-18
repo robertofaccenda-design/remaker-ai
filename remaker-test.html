@@ -795,6 +795,92 @@
       font-family: monospace;
     }
 
+    /* ── History ── */
+    .history-section {
+      max-width: 640px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+      display: none;
+    }
+    .history-section.visible { display: block; }
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .history-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.02em;
+    }
+    .btn-clear-history {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--cream-dim);
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-clear-history:hover { border-color: var(--accent); color: var(--accent); }
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .history-item:hover { border-color: var(--accent); background: var(--surface2); }
+    .history-emoji { font-size: 1.8rem; flex-shrink: 0; }
+    .history-info { flex: 1; min-width: 0; }
+    .history-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--cream);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-meta {
+      font-size: 0.75rem;
+      color: var(--cream-dim);
+      margin-top: 2px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .history-price {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .history-del {
+      background: none;
+      border: none;
+      color: var(--cream-dim);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 1rem;
+      line-height: 1;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+    .history-del:hover { opacity: 1; }
+
     /* ── Notification toast ── */
     .toast {
       position: fixed;
@@ -998,6 +1084,15 @@
 
   </div>
 
+  <!-- History -->
+  <div class="history-section" id="historySection">
+    <div class="history-header">
+      <div class="history-title">🕒 Cronologia scansioni</div>
+      <button class="btn-clear-history" onclick="clearHistory()">Cancella tutto</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
@@ -1183,6 +1278,7 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
         }
         showScan(false);
         renderResults(parsed);
+        saveToHistory(parsed);
 
       } catch (err) {
         showScan(false);
@@ -1318,6 +1414,75 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ── History ─────────────────────────────────────────────────────────
+    const HISTORY_KEY = 'rm_history';
+    const HISTORY_MAX = 30;
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function saveToHistory(parsed) {
+      const list = getHistory();
+      const entry = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }),
+        emoji: parsed.emoji || '📦',
+        oggetto: parsed.oggetto || 'Oggetto',
+        categoria: parsed.categoria || '',
+        valMin: parsed.stima_valore?.min ?? null,
+        valMax: parsed.stima_valore?.max ?? null,
+        data: parsed
+      };
+      list.unshift(entry);
+      if (list.length > HISTORY_MAX) list.splice(HISTORY_MAX);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = getHistory();
+      const section = document.getElementById('historySection');
+      const container = document.getElementById('historyList');
+      if (!list.length) { section.classList.remove('visible'); return; }
+      section.classList.add('visible');
+      container.innerHTML = list.map((entry, i) => `
+        <div class="history-item" onclick="loadFromHistory(${i})">
+          <div class="history-emoji">${escHtml(entry.emoji)}</div>
+          <div class="history-info">
+            <div class="history-name">${escHtml(entry.oggetto)}</div>
+            <div class="history-meta">
+              <span>${escHtml(entry.categoria)}</span>
+              <span>·</span>
+              <span>${escHtml(entry.date)}</span>
+            </div>
+          </div>
+          ${entry.valMin != null ? `<div class="history-price">€${entry.valMin}–${entry.valMax}</div>` : ''}
+          <button class="history-del" onclick="event.stopPropagation(); deleteFromHistory(${i})" title="Rimuovi">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function loadFromHistory(index) {
+      const list = getHistory();
+      if (!list[index]) return;
+      renderResults(list[index].data);
+    }
+
+    function deleteFromHistory(index) {
+      const list = getHistory();
+      list.splice(index, 1);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (!confirm('Cancellare tutta la cronologia?')) return;
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+    }
+
     // ── Init ─────────────────────────────────────────────────────────────
     setMode('foto');
 
@@ -1333,6 +1498,8 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto ita
           document.getElementById('apiPanel').classList.add('open');
         }, 600);
       }
+      // Load history
+      renderHistory();
     });
   </script>
 </body>
