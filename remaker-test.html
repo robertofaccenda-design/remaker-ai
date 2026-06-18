@@ -1343,9 +1343,7 @@
 Analizza ${hasImage ? "l'oggetto in questa immagine" : ""}${hasImage && hasText ? " e considera questa descrizione aggiuntiva" : ""}${!hasImage && hasText ? "questo oggetto descritto" : ""}.
 ${hasText ? `Descrizione: ${textVal}` : ""}
 
-IMPORTANTE: Rispondi SOLO con JSON puro. Niente markdown, niente backtick, niente testo prima o dopo.
-Usa solo apostrofi singoli nei valori testuali, NON virgolette doppie dentro le stringhe.
-Mantieni ogni campo di testo BREVE (max 15 parole per "note", max 20 parole per "descrizione" delle idee, max 25 parole per "descrizione" dell'annuncio).
+Rispondi SOLO con JSON valido. Nessun testo fuori dal JSON. Stringhe brevi: max 12 parole per campo.
 
 Struttura JSON richiesta:
 {"oggetto":"nome oggetto","emoji":"emoji","categoria":"categoria","condizione_stimata":"ottima","stima_valore":{"min":0,"max":0,"note":"breve nota mercato"},"idee_riuso":[{"titolo":"titolo","descrizione":"descrizione breve","difficolta":"facile","tipo":"vendi"}],"annuncio":{"titolo":"titolo annuncio","descrizione":"testo annuncio breve","prezzo_consigliato":0,"hashtag":["tag1","tag2","tag3","tag4","tag5"]},"ricambi":{"query_principale":"query di ricerca in italiano per trovare ricambi o accessori","suggerimenti":[{"etichetta":"nome ricambio o accessorio","query":"query specifica di ricerca"}]}}
@@ -1362,7 +1360,7 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ parts }],
-              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
+              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048, responseMimeType: 'application/json' }
             })
           }
         );
