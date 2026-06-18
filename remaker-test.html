@@ -1385,41 +1385,35 @@ Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Per "ricambi
           throw new Error(feedback ? `Richiesta bloccata: ${feedback}` : `Risposta vuota dal modello (finishReason: ${finishReason})`);
         }
 
-        // Estrai JSON anche se il modello aggiunge testo intorno
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error(`Formato risposta non riconosciuto: ${rawText.slice(0, 100)}`);
-
-        // Repair JSON: escape caratteri literali dentro le stringhe
-        function repairJSON(s) {
-          let result = '';
-          let inString = false;
-          let escaped = false;
-          for (let i = 0; i < s.length; i++) {
-            const ch = s[i];
-            if (escaped) { result += ch; escaped = false; continue; }
-            if (ch === '\\') { result += ch; escaped = true; continue; }
-            if (ch === '"') { inString = !inString; result += ch; continue; }
-            if (inString) {
-              if (ch === '\n') { result += '\\n'; continue; }
-              if (ch === '\r') { result += '\\r'; continue; }
-              if (ch === '\t') { result += '\\t'; continue; }
-              // Rimuovi altri caratteri di controllo
-              if (ch.charCodeAt(0) < 32) continue;
-            }
-            result += ch;
-          }
-          // Trailing commas
-          result = result.replace(/,(\s*[}\]])/g, '$1');
-          return result;
-        }
-
-        let jsonStr = repairJSON(jsonMatch[0]);
         let parsed;
         try {
-          parsed = JSON.parse(jsonStr);
-        } catch(e) {
-          console.warn('JSON parse error:', e.message, '\nJSON:', jsonStr.slice(1200, 1300));
-          throw new Error(`Risposta AI malformata: ${e.message}`);
+          // Tentativo 1: parse diretto (responseMimeType garantisce JSON valido)
+          parsed = JSON.parse(rawText);
+        } catch(e1) {
+          try {
+            // Tentativo 2: estrai il blocco JSON e fai escape dei newline letterali nelle stringhe
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error('Nessun blocco JSON trovato');
+            let s = jsonMatch[0];
+            let result = '', inString = false, escaped = false;
+            for (let i = 0; i < s.length; i++) {
+              const ch = s[i];
+              if (escaped) { result += ch; escaped = false; continue; }
+              if (ch === '\\') { result += ch; escaped = true; continue; }
+              if (ch === '"') { inString = !inString; result += ch; continue; }
+              if (inString && ch.charCodeAt(0) < 32) {
+                if (ch === '\n') result += '\\n';
+                else if (ch === '\r') result += '\\r';
+                else if (ch === '\t') result += '\\t';
+                continue;
+              }
+              result += ch;
+            }
+            parsed = JSON.parse(result);
+          } catch(e2) {
+            console.warn('JSON parse fallback error:', e2.message, '\nRaw:', rawText.slice(0, 300));
+            throw new Error(`Risposta AI malformata: ${e2.message}`);
+          }
         }
         showScan(false);
         renderResults(parsed);
