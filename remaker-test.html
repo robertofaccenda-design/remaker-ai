@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReMaker AI — Non buttare. Reinventa.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:        #111A12;
+      --bg2:       #192119;
+      --surface:   #1E2B1F;
+      --surface2:  #243325;
+      --border:    rgba(196,190,170,0.12);
+      --cream:     #F0E9D8;
+      --cream-dim: rgba(240,233,216,0.55);
+      --cream-sub: rgba(240,233,216,0.35);
+      --terra:     #C4622D;
+      --terra-dim: rgba(196,98,45,0.18);
+      --terra-glow:rgba(196,98,45,0.35);
+      --olive:     #7A9B5A;
+      --olive-dim: rgba(122,155,90,0.15);
+      --gold:      #C9A84C;
+      --gold-dim:  rgba(201,168,76,0.15);
+      --r:         12px;
+      --r2:        20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Background orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 600px; height: 600px; background: rgba(196,98,45,0.07); top: -200px; right: -100px; }
+    .orb-2 { width: 500px; height: 500px; background: rgba(122,155,90,0.06); bottom: -100px; left: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: rgba(201,168,76,0.04); top: 40%; left: 40%; }
+
+    /* ── Layout ── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 36px 0 0;
+      margin-bottom: 64px;
+    }
+
+    .logo-wrap { display: flex; flex-direction: column; gap: 2px; }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--cream);
+      line-height: 1;
+    }
+
+    .logo span {
+      color: var(--terra);
+    }
+
+    .tagline {
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cream-sub);
+    }
+
+    .btn-settings {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--cream-dim);
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .btn-settings:hover { border-color: var(--terra); color: var(--terra); }
+
+    /* ── Hero copy ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--cream);
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--terra);
+    }
+    .hero p {
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--cream-dim);
+      max-width: 420px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── API Key Panel ── */
+    .api-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: none;
+    }
+    .api-panel.open { display: block; animation: fadeIn 0.2s ease; }
+    .api-panel label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream-sub);
+      margin-bottom: 10px;
+    }
+    .api-row {
+      display: flex;
+      gap: 10px;
+    }
+    .api-row input {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+    }
+    .api-row input:focus { border-color: var(--terra); }
+    .api-row input::placeholder { color: var(--cream-sub); }
+    .btn-save-api {
+      background: var(--terra);
+      border: none;
+      border-radius: var(--r);
+      padding: 10px 18px;
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-save-api:hover { opacity: 0.85; }
+    .api-hint {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: var(--cream-sub);
+      font-weight: 300;
+    }
+    .api-hint a { color: var(--olive); text-decoration: none; }
+    .api-hint a:hover { text-decoration: underline; }
+
+    /* ── Input mode toggle ── */
+    .mode-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+      margin: 0 auto 24px;
+      width: fit-content;
+      gap: 2px;
+    }
+    .mode-btn {
+      padding: 8px 22px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--cream-dim);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .mode-btn.active {
+      background: var(--terra);
+      color: white;
+      font-weight: 500;
+    }
+
+    /* ── Input card ── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 28px;
+      margin-bottom: 20px;
+      transition: border-color 0.3s;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--r);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--terra);
+      background: var(--terra-dim);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon {
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+    .drop-text-main {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--cream-dim);
+      margin-bottom: 4px;
+    }
+    .drop-text-sub {
+      font-size: 0.75rem;
+      color: var(--cream-sub);
+      font-weight: 300;
+    }
+
+    .preview-wrap {
+      position: relative;
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .preview-wrap img {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+      border-radius: var(--r);
+    }
+    .preview-remove {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      width: 30px; height: 30px;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .preview-remove:hover { background: var(--terra); }
+
+    /* Text input */
+    .text-input-area {
+      width: 100%;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 18px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--cream);
+      outline: none;
+      resize: none;
+      min-height: 140px;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+    .text-input-area:focus { border-color: var(--terra); }
+    .text-input-area::placeholder { color: var(--cream-sub); }
+
+    .input-helper {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: var(--cream-sub);
+      font-weight: 300;
+    }
+
+    /* Combined mode: foto + nota */
+    .combo-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .combo-divider span {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream-sub);
+      white-space: nowrap;
+    }
+    .combo-divider::before, .combo-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── CTA Button ── */
+    .btn-analyze {
+      width: 100%;
+      background: var(--terra);
+      border: none;
+      border-radius: var(--r2);
+      padding: 18px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-analyze::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+    }
+    .btn-analyze:hover { transform: translateY(-1px); box-shadow: 0 8px 32px var(--terra-glow); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Scan Animation ── */
+    .scan-state {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .scan-state.visible { display: block; animation: fadeIn 0.4s ease; }
+
+    .scanner {
+      width: 120px; height: 120px;
+      margin: 0 auto 32px;
+      position: relative;
+    }
+    .scanner-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--terra);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1.2s linear infinite;
+    }
+    .scanner-ring-2 {
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(196,98,45,0.3);
+      border-radius: 50%;
+      border-bottom-color: transparent;
+      animation: spin 2s linear infinite reverse;
+    }
+    .scanner-dot {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px; height: 12px;
+      background: var(--terra);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .scan-label {
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--cream-sub);
+      letter-spacing: 0.08em;
+    }
+    .scan-label span {
+      display: inline-block;
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    /* ── Results ── */
+    .results {
+      display: none;
+      animation: fadeUp 0.5s ease;
+    }
+    .results.visible { display: block; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .results-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+    }
+    .btn-reset {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 16px;
+      color: var(--cream-sub);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--cream-dim); color: var(--cream-dim); }
+
+    /* Object card */
+    .obj-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .obj-emoji { font-size: 2.4rem; flex-shrink: 0; }
+    .obj-info { flex: 1; }
+    .obj-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .obj-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .tag-cat { border-color: rgba(122,155,90,0.4); color: var(--olive); background: var(--olive-dim); }
+    .tag-cond { border-color: rgba(201,168,76,0.4); color: var(--gold); background: var(--gold-dim); }
+
+    /* Value card */
+    .value-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream-sub);
+      margin-bottom: 14px;
+    }
+    .value-range {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .value-min, .value-max {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--terra);
+    }
+    .value-sep {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      color: var(--cream-sub);
+    }
+    .value-bar {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .value-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--olive), var(--terra));
+      border-radius: 2px;
+      width: 0;
+      transition: width 1s ease 0.3s;
+    }
+    .value-note {
+      font-size: 0.78rem;
+      color: var(--cream-sub);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    /* Ideas section */
+    .ideas-section { margin-bottom: 16px; }
+    .ideas-section .card-label { margin-bottom: 14px; }
+    .ideas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px) { .ideas-grid { grid-template-columns: 1fr; } }
+
+    .idea-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 18px;
+      transition: all 0.2s;
+      cursor: default;
+    }
+    .idea-card:hover {
+      border-color: rgba(196,98,45,0.3);
+      transform: translateY(-2px);
+    }
+    .idea-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .idea-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.3;
+      flex: 1;
+    }
+    .tag-idea {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .tag-vendi   { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .tag-dona    { background: rgba(122,155,90,0.15); color: var(--olive); border: 1px solid rgba(122,155,90,0.3); }
+    .tag-trasforma { background: rgba(196,98,45,0.15); color: var(--terra); border: 1px solid rgba(196,98,45,0.3); }
+    .tag-ripara  { background: rgba(100,160,200,0.12); color: #7ab8d4; border: 1px solid rgba(100,160,200,0.25); }
+
+    .idea-desc {
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    .diff-dots {
+      display: flex;
+      gap: 3px;
+      margin-top: 10px;
+    }
+    .diff-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+    .diff-dot.active { background: var(--terra); border-color: var(--terra); }
+
+    /* Listing card */
+    .listing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .listing-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .listing-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .btn-copy {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 6px 14px;
+      color: var(--cream-sub);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .btn-copy:hover { border-color: var(--terra); color: var(--terra); }
+    .btn-copy.copied { border-color: var(--olive); color: var(--olive); }
+
+    .listing-body {
+      font-size: 0.85rem;
+      color: var(--cream-dim);
+      font-weight: 300;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      background: var(--bg2);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .listing-price {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .listing-price-label {
+      font-size: 0.75rem;
+      color: var(--cream-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .listing-price-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--terra);
+    }
+    .hashtags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .hashtag {
+      font-size: 0.72rem;
+      color: var(--olive);
+      background: var(--olive-dim);
+      border: 1px solid rgba(122,155,90,0.25);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-weight: 400;
+    }
+
+    /* Error */
+    .error-box {
+      display: none;
+      background: rgba(196,98,45,0.1);
+      border: 1px solid rgba(196,98,45,0.3);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: #e8856a;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    .error-box.visible { display: block; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 0;
+      font-size: 0.72rem;
+      color: var(--cream-sub);
+      font-weight: 300;
+      letter-spacing: 0.06em;
+    }
+    footer strong {
+      color: var(--terra);
+      font-weight: 500;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+    }
+
+    /* ── Animations ── */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.6); }
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── File protocol banner ── */
+    .file-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: var(--terra);
+      color: white;
+      padding: 12px 20px;
+      font-size: 0.82rem;
+      font-weight: 400;
+      text-align: center;
+      z-index: 200;
+      line-height: 1.5;
+    }
+    .file-banner.show { display: block; }
+    .file-banner strong { font-weight: 600; }
+    .file-banner code {
+      background: rgba(0,0,0,0.25);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    /* ── Notification toast ── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- File:// protocol warning -->
+  <div class="file-banner" id="fileBanner">
+    ⚠ <strong>Attenzione:</strong> stai aprendo il file direttamente dal disco. Chrome blocca le chiamate API in questo modo.
+    Avvia un server locale: apri il Terminale nella cartella del file e digita <code>python3 -m http.server 8080</code>,
+    poi vai su <code>http://localhost:8080/remaker-test.html</code>
+    — oppure carica il file su <strong>Cloudflare Pages</strong>.
+  </div>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="wrap">
+
+    <!-- Header -->
+    <header>
+      <div class="logo-wrap">
+        <div class="logo">Re<span>Maker</span> AI</div>
+        <div class="tagline">Non buttare &nbsp;·&nbsp; Reinventa</div>
+      </div>
+      <button class="btn-settings" id="btnSettings" title="Impostazioni API">⚙</button>
+    </header>
+
+    <!-- API Key panel -->
+    <div class="api-panel" id="apiPanel">
+      <label>Gemini API Key</label>
+      <div class="api-row">
+        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off">
+        <button class="btn-save-api" onclick="saveApiKey()">Salva</button>
+      </div>
+      <div class="api-hint">
+        Chiave gratuita su <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>.
+        La chiave è salvata solo nel tuo browser.
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Ogni oggetto ha<br><em>una seconda vita.</em></h1>
+      <p>Carica una foto o descrivi un oggetto inutilizzato: l'AI ti dice quanto vale, come riusarlo e ti scrive l'annuncio.</p>
+    </div>
+
+    <!-- Input section -->
+    <div id="inputSection">
+
+      <!-- Mode toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnFoto" onclick="setMode('foto')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="4"/></svg>
+          Foto
+        </button>
+        <button class="mode-btn" id="btnTesto" onclick="setMode('testo')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="16" y2="12"/><line x1="3" y1="18" x2="12" y2="18"/></svg>
+          Testo
+        </button>
+        <button class="mode-btn" id="btnEntrambi" onclick="setMode('entrambi')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="14" y1="6" x2="21" y2="6"/><line x1="14" y1="10" x2="19" y2="10"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="3" y1="20" x2="17" y2="20"/></svg>
+          Entrambi
+        </button>
+      </div>
+
+      <div class="input-card">
+        <!-- Photo input -->
+        <div id="photoSection">
+          <div class="drop-zone" id="dropZone">
+            <input type="file" accept="image/*" id="fileInput" onchange="handleFile(this.files[0])">
+            <div class="drop-icon">📷</div>
+            <div class="drop-text-main">Trascina o clicca per caricare una foto</div>
+            <div class="drop-text-sub">JPG, PNG, WEBP — max 10MB</div>
+          </div>
+          <div id="previewSection" style="display:none">
+            <div class="preview-wrap">
+              <img id="previewImg" src="" alt="anteprima">
+              <button class="preview-remove" onclick="removeImage()" title="Rimuovi">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider (entrambi mode) -->
+        <div class="combo-divider" id="comboDivider" style="display:none">
+          <span>aggiungi una nota</span>
+        </div>
+
+        <!-- Text input -->
+        <div id="textSection" style="display:none">
+          <textarea class="text-input-area" id="textInput"
+            placeholder="es. Vecchia chitarra acustica anni '80, corde rotte, qualche graffio sulla cassa, custodia originale inclusa..."></textarea>
+          <div class="input-helper">Più dettagli dai, migliori saranno le idee.</div>
+        </div>
+      </div>
+
+      <button class="btn-analyze" id="btnAnalyze" onclick="analyze()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4l3 3"/>
+        </svg>
+        Analizza oggetto
+      </button>
+
+      <div class="error-box" id="errorBox"></div>
+    </div>
+
+    <!-- Scan loading -->
+    <div class="scan-state" id="scanState">
+      <div class="scanner">
+        <div class="scanner-ring"></div>
+        <div class="scanner-ring-2"></div>
+        <div class="scanner-dot"></div>
+      </div>
+      <div class="scan-label">Analisi in corso<span>...</span></div>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <div class="results-header">
+        <div class="results-title">Ecco cosa puoi fare</div>
+        <button class="btn-reset" onclick="reset()">↩ Nuovo oggetto</button>
+      </div>
+
+      <!-- Object identification -->
+      <div class="obj-card" id="objCard">
+        <div class="obj-emoji" id="objEmoji">📦</div>
+        <div class="obj-info">
+          <div class="obj-name" id="objName">—</div>
+          <div class="obj-meta">
+            <span class="tag tag-cat" id="objCat">—</span>
+            <span class="tag tag-cond" id="objCond">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Value estimate -->
+      <div class="value-card">
+        <div class="card-label">💰 Stima di mercato</div>
+        <div class="value-range">
+          <span class="value-min" id="valMin">—</span>
+          <span class="value-sep">—</span>
+          <span class="value-max" id="valMax">—</span>
+          <span style="font-size:0.85rem;color:var(--cream-sub);margin-left:4px">EUR</span>
+        </div>
+        <div class="value-bar"><div class="value-bar-fill" id="valBar"></div></div>
+        <div class="value-note" id="valNote">—</div>
+      </div>
+
+      <!-- Ideas -->
+      <div class="ideas-section">
+        <div class="card-label">♻️ Idee di riuso</div>
+        <div class="ideas-grid" id="ideasGrid"></div>
+      </div>
+
+      <!-- Listing -->
+      <div class="listing-card" id="listingCard">
+        <div class="card-label">📝 Annuncio pronto</div>
+        <div class="listing-head">
+          <div class="listing-title" id="listingTitle">—</div>
+          <button class="btn-copy" id="btnCopy" onclick="copyListing()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copia
+          </button>
+        </div>
+        <div class="listing-body" id="listingBody">—</div>
+        <div class="listing-price">
+          <span class="listing-price-label">Prezzo consigliato</span>
+          <span class="listing-price-val" id="listingPrice">—</span>
+        </div>
+        <div class="hashtags" id="hashtags"></div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <strong>ReMaker AI</strong> — Test Alpha &nbsp;·&nbsp; Powered by Gemini 1.5 Flash
+    </footer>
+
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────
+    let currentMode = 'foto';
+    let imageBase64 = null;
+    let imageMimeType = null;
+    let currentListingText = '';
+
+    // ── API Key ─────────────────────────────────────────────────────────
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (!key) return;
+      localStorage.setItem('rm_gemini_key', key);
+      showToast('✓ API Key salvata');
+      document.getElementById('apiPanel').classList.remove('open');
+    }
+
+    function getApiKey() {
+      return localStorage.getItem('rm_gemini_key') || '';
+    }
+
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      const panel = document.getElementById('apiPanel');
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) {
+        const saved = getApiKey();
+        if (saved) document.getElementById('apiKeyInput').value = saved;
+        document.getElementById('apiKeyInput').focus();
+      }
+    });
+
+    // ── Mode toggle ─────────────────────────────────────────────────────
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnFoto').classList.toggle('active', mode === 'foto');
+      document.getElementById('btnTesto').classList.toggle('active', mode === 'testo');
+      document.getElementById('btnEntrambi').classList.toggle('active', mode === 'entrambi');
+
+      document.getElementById('photoSection').style.display =
+        (mode === 'foto' || mode === 'entrambi') ? 'block' : 'none';
+      document.getElementById('textSection').style.display =
+        (mode === 'testo' || mode === 'entrambi') ? 'block' : 'none';
+      document.getElementById('comboDivider').style.display =
+        mode === 'entrambi' ? 'flex' : 'none';
+
+      if (mode === 'testo') {
+        document.getElementById('textInput').style.minHeight = '180px';
+      } else {
+        document.getElementById('textInput').style.minHeight = '100px';
+      }
+    }
+
+    // ── Image handling ──────────────────────────────────────────────────
+    function handleFile(file) {
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { showError('Immagine troppo grande (max 10MB).'); return; }
+      imageMimeType = file.type || 'image/jpeg';
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        imageBase64 = dataUrl.split(',')[1];
+        document.getElementById('previewImg').src = dataUrl;
+        document.getElementById('dropZone').style.display = 'none';
+        document.getElementById('previewSection').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      imageBase64 = null; imageMimeType = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('dropZone').style.display = 'block';
+      document.getElementById('previewSection').style.display = 'none';
+    }
+
+    // Drag & drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) handleFile(file);
+    });
+
+    // ── Analyze ─────────────────────────────────────────────────────────
+    async function analyze() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        document.getElementById('apiPanel').classList.add('open');
+        showError('Inserisci la tua Gemini API Key nelle impostazioni (⚙).');
+        return;
+      }
+
+      const textVal = document.getElementById('textInput').value.trim();
+      const hasImage = !!imageBase64;
+      const hasText = !!textVal;
+
+      if (!hasImage && !hasText) {
+        showError('Carica una foto o scrivi una descrizione dell\'oggetto.');
+        return;
+      }
+
+      hideError();
+      showScan(true);
+
+      const parts = [];
+      if (hasImage) {
+        parts.push({ inline_data: { mime_type: imageMimeType, data: imageBase64 } });
+      }
+
+      const prompt = `Sei un esperto di economia circolare e mercato dell'usato italiano.
+Analizza ${hasImage ? 'l\'oggetto in questa immagine' : ''}${hasImage && hasText ? ' e considera questa descrizione aggiuntiva' : ''}${!hasImage && hasText ? 'questo oggetto descritto' : ''}.
+${hasText ? `Descrizione: "${textVal}"` : ''}
+
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza markdown, senza \`\`\`, senza testo aggiuntivo. Il JSON deve avere questa struttura esatta:
+{
+  "oggetto": "nome comune dell'oggetto",
+  "emoji": "un emoji che rappresenta l'oggetto",
+  "categoria": "categoria (es: Elettronica, Arredamento, Abbigliamento, Sport, Libri, ecc.)",
+  "condizione_stimata": "ottima|buona|discreta|da riparare",
+  "stima_valore": {
+    "min": numero_intero,
+    "max": numero_intero,
+    "note": "breve spiegazione della stima basata sul mercato italiano (Subito, eBay.it)"
+  },
+  "idee_riuso": [
+    {
+      "titolo": "titolo breve dell'idea",
+      "descrizione": "descrizione pratica in 1-2 frasi",
+      "difficolta": "facile|media|avanzata",
+      "tipo": "vendi|dona|trasforma|ripara"
+    }
+  ],
+  "annuncio": {
+    "titolo": "titolo dell'annuncio ottimizzato per Subito.it/eBay",
+    "descrizione": "testo completo dell'annuncio, naturale e persuasivo, 3-5 righe",
+    "prezzo_consigliato": numero_intero,
+    "hashtag": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
+  }
+}
+
+Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto italiano.`;
+
+      parts.push({ text: prompt });
+
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
+            })
+          }
+        );
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `Errore API: ${res.status}`);
+        }
+
+        const data = await res.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const jsonText = rawText.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+        const parsed = JSON.parse(jsonText);
+        showScan(false);
+        renderResults(parsed);
+
+      } catch (err) {
+        showScan(false);
+        let msg = err.message || 'Errore sconosciuto.';
+        if (err instanceof TypeError && (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network'))) {
+          if (window.location.protocol === 'file:') {
+            msg = 'Chrome blocca le richieste da file://. Soluzione: apri il Terminale nella cartella del file e digita "python3 -m http.server 8080", poi vai su http://localhost:8080/remaker-test.html — oppure carica il file su Cloudflare Pages.';
+          } else {
+            msg = 'Errore di rete. Controlla la connessione e riprova.';
+          }
+        } else if (msg.includes('API_KEY_INVALID') || msg.includes('API key') || msg.includes('400')) {
+          msg = 'API Key non valida. Controlla le impostazioni (⚙).';
+        } else if (msg.includes('QUOTA') || msg.includes('quota') || msg.includes('429')) {
+          msg = 'Quota API esaurita. Riprova tra qualche minuto.';
+        } else if (msg.includes('JSON') || msg.includes('json') || msg.includes('SyntaxError')) {
+          msg = 'Risposta AI non valida. Riprova.';
+        }
+        showError('⚠ ' + msg);
+      }
+    }
+
+    // ── Render results ───────────────────────────────────────────────────
+    function renderResults(d) {
+      // Object
+      document.getElementById('objEmoji').textContent = d.emoji || '📦';
+      document.getElementById('objName').textContent = d.oggetto || '—';
+      document.getElementById('objCat').textContent = d.categoria || '—';
+      const condMap = { ottima: 'Ottima', buona: 'Buona', discreta: 'Discreta', 'da riparare': 'Da riparare' };
+      document.getElementById('objCond').textContent = condMap[d.condizione_stimata] || d.condizione_stimata || '—';
+
+      // Value
+      const sv = d.stima_valore || {};
+      document.getElementById('valMin').textContent = sv.min != null ? `€${sv.min}` : '—';
+      document.getElementById('valMax').textContent = sv.max != null ? `€${sv.max}` : '—';
+      document.getElementById('valNote').textContent = sv.note || '';
+      // Animate bar based on min/max ratio to a "reference" of €500
+      setTimeout(() => {
+        const pct = Math.min(((sv.max || 0) / 500) * 100, 100);
+        document.getElementById('valBar').style.width = pct + '%';
+      }, 100);
+
+      // Ideas
+      const grid = document.getElementById('ideasGrid');
+      grid.innerHTML = '';
+      (d.idee_riuso || []).forEach(idea => {
+        const diffDots = ['facile','media','avanzata'].map((l, i) => {
+          const lvl = ['facile','media','avanzata'].indexOf(idea.difficolta);
+          return `<div class="diff-dot ${i <= lvl ? 'active' : ''}"></div>`;
+        }).join('');
+
+        const tagClass = `tag-${idea.tipo || 'vendi'}`;
+        const tagLabel = { vendi:'Vendi', dona:'Dona', trasforma:'Trasforma', ripara:'Ripara' }[idea.tipo] || idea.tipo;
+
+        grid.innerHTML += `
+          <div class="idea-card">
+            <div class="idea-top">
+              <div class="idea-title">${escHtml(idea.titolo)}</div>
+              <span class="tag-idea ${tagClass}">${tagLabel}</span>
+            </div>
+            <div class="idea-desc">${escHtml(idea.descrizione)}</div>
+            <div class="diff-dots">${diffDots}</div>
+          </div>`;
+      });
+
+      // Listing
+      const ann = d.annuncio || {};
+      document.getElementById('listingTitle').textContent = ann.titolo || '—';
+      document.getElementById('listingBody').textContent = ann.descrizione || '—';
+      document.getElementById('listingPrice').textContent =
+        ann.prezzo_consigliato != null ? `€${ann.prezzo_consigliato}` : '—';
+
+      const hashWrap = document.getElementById('hashtags');
+      hashWrap.innerHTML = '';
+      (ann.hashtag || []).forEach(h => {
+        const span = document.createElement('span');
+        span.className = 'hashtag';
+        span.textContent = h.startsWith('#') ? h : '#' + h;
+        hashWrap.appendChild(span);
+      });
+
+      currentListingText = `${ann.titolo}\n\n${ann.descrizione}\n\nPrezzo: €${ann.prezzo_consigliato}\n\n${(ann.hashtag||[]).map(h=>h.startsWith('#')?h:'#'+h).join(' ')}`;
+
+      document.getElementById('inputSection').style.display = 'none';
+      document.getElementById('results').classList.add('visible');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── UI helpers ──────────────────────────────────────────────────────
+    function showScan(visible) {
+      document.getElementById('inputSection').style.display = visible ? 'none' : 'block';
+      document.getElementById('scanState').classList.toggle('visible', visible);
+      document.getElementById('results').classList.remove('visible');
+    }
+
+    function reset() {
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('inputSection').style.display = 'block';
+      removeImage();
+      document.getElementById('textInput').value = '';
+      document.getElementById('valBar').style.width = '0';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorBox');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+    function hideError() {
+      document.getElementById('errorBox').classList.remove('visible');
+    }
+
+    function showToast(msg, duration = 2000) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    async function copyListing() {
+      try {
+        await navigator.clipboard.writeText(currentListingText);
+        const btn = document.getElementById('btnCopy');
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copiato!';
+        showToast('✓ Annuncio copiato');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copia';
+        }, 2500);
+      } catch { showToast('Copia manuale: seleziona il testo'); }
+    }
+
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────
+    setMode('foto');
+
+    window.addEventListener('load', () => {
+      // Warn if opened from file:// (Chrome blocks fetch)
+      if (window.location.protocol === 'file:') {
+        document.getElementById('fileBanner').classList.add('show');
+        document.querySelector('.wrap').style.paddingTop = '70px';
+      }
+      // Show API panel if no key set
+      if (!getApiKey()) {
+        setTimeout(() => {
+          document.getElementById('apiPanel').classList.add('open');
+        }, 600);
+      }
+    });
+  </script>
+</body>
+</html>
