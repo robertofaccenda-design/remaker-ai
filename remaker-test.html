@@ -1112,37 +1112,17 @@
       }
 
       const prompt = `Sei un esperto di economia circolare e mercato dell'usato italiano.
-Analizza ${hasImage ? 'l\'oggetto in questa immagine' : ''}${hasImage && hasText ? ' e considera questa descrizione aggiuntiva' : ''}${!hasImage && hasText ? 'questo oggetto descritto' : ''}.
-${hasText ? `Descrizione: "${textVal}"` : ''}
+Analizza ${hasImage ? "l'oggetto in questa immagine" : ""}${hasImage && hasText ? " e considera questa descrizione aggiuntiva" : ""}${!hasImage && hasText ? "questo oggetto descritto" : ""}.
+${hasText ? `Descrizione: ${textVal}` : ""}
 
-Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza markdown, senza \`\`\`, senza testo aggiuntivo. Il JSON deve avere questa struttura esatta:
-{
-  "oggetto": "nome comune dell'oggetto",
-  "emoji": "un emoji che rappresenta l'oggetto",
-  "categoria": "categoria (es: Elettronica, Arredamento, Abbigliamento, Sport, Libri, ecc.)",
-  "condizione_stimata": "ottima|buona|discreta|da riparare",
-  "stima_valore": {
-    "min": numero_intero,
-    "max": numero_intero,
-    "note": "breve spiegazione della stima basata sul mercato italiano (Subito, eBay.it)"
-  },
-  "idee_riuso": [
-    {
-      "titolo": "titolo breve dell'idea",
-      "descrizione": "descrizione pratica in 1-2 frasi",
-      "difficolta": "facile|media|avanzata",
-      "tipo": "vendi|dona|trasforma|ripara"
-    }
-  ],
-  "annuncio": {
-    "titolo": "titolo dell'annuncio ottimizzato per Subito.it/eBay",
-    "descrizione": "testo completo dell'annuncio, naturale e persuasivo, 3-5 righe",
-    "prezzo_consigliato": numero_intero,
-    "hashtag": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
-  }
-}
+IMPORTANTE: Rispondi SOLO con JSON puro. Niente markdown, niente backtick, niente testo prima o dopo.
+Usa solo apostrofi singoli nei valori testuali, NON virgolette doppie dentro le stringhe.
+Mantieni ogni campo di testo BREVE (max 15 parole per "note", max 20 parole per "descrizione" delle idee, max 25 parole per "descrizione" dell'annuncio).
 
-Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto italiano.`;
+Struttura JSON richiesta:
+{"oggetto":"nome oggetto","emoji":"emoji","categoria":"categoria","condizione_stimata":"ottima","stima_valore":{"min":0,"max":0,"note":"breve nota mercato"},"idee_riuso":[{"titolo":"titolo","descrizione":"descrizione breve","difficolta":"facile","tipo":"vendi"}],"annuncio":{"titolo":"titolo annuncio","descrizione":"testo annuncio breve","prezzo_consigliato":0,"hashtag":["tag1","tag2","tag3","tag4","tag5"]}}
+
+Genera 6 idee di riuso diversificate (vendi/dona/trasforma/ripara). Contesto italiano.`;
 
       parts.push({ text: prompt });
 
@@ -1154,7 +1134,7 @@ Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto ita
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ parts }],
-              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048, responseMimeType: 'application/json' }
+              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
             })
           }
         );
@@ -1182,7 +1162,25 @@ Genera esattamente 6-8 idee di riuso diversificate. Adatta tutto al contesto ita
         // Estrai JSON anche se il modello aggiunge testo intorno
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error(`Formato risposta non riconosciuto: ${rawText.slice(0, 100)}`);
-        const parsed = JSON.parse(jsonMatch[0]);
+
+        // Repair JSON: rimuovi caratteri di controllo e trailing commas
+        function repairJSON(s) {
+          // Rimuovi caratteri di controllo (eccetto \n \r \t)
+          s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+          // Trailing commas prima di } o ]
+          s = s.replace(/,(\s*[}\]])/g, '$1');
+          return s;
+        }
+
+        let jsonStr = repairJSON(jsonMatch[0]);
+        let parsed;
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch(e) {
+          // Fallback: prova a estrarre solo i campi essenziali con regex
+          console.warn('JSON parse fallback, errore:', e.message);
+          throw new Error(`Risposta AI malformata: ${e.message}`);
+        }
         showScan(false);
         renderResults(parsed);
 
