@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>ReMaker AI — Mockup UI v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:         #F4F1EB;
+      --bg2:        #EDE9E1;
+      --surface:    #FFFFFF;
+      --surface2:   #F9F7F3;
+      --border:     rgba(24,20,14,0.09);
+      --border2:    rgba(24,20,14,0.15);
+      --text:       #18140E;
+      --text2:      #6B6558;
+      --text3:      #A09A8E;
+      --accent:     #E05C22;
+      --accent-dim: rgba(224,92,34,0.10);
+      --accent-glow:rgba(224,92,34,0.22);
+      --vendi:      #D4870A;
+      --vendi-bg:   #FEF3DC;
+      --dona:       #1A9E72;
+      --dona-bg:    #DFFAF0;
+      --trasforma:  #7B52D4;
+      --trasforma-bg:#EDE8FF;
+      --ripara:     #1869C5;
+      --ripara-bg:  #E0ECFF;
+      --vinted:     #09B66D;
+      --vinted-bg:  #E0FAF0;
+      --r:          14px;
+      --r2:         22px;
+      --r3:         32px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ─── MOCKUP BANNER ─── */
+    .mockup-banner {
+      background: var(--text);
+      color: #F4F1EB;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 7px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .mockup-banner span { opacity: 0.5; }
+    .screen-toggle {
+      display: inline-flex;
+      background: rgba(255,255,255,0.12);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .screen-toggle button {
+      background: transparent;
+      border: none;
+      color: rgba(244,241,235,0.55);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .screen-toggle button.active {
+      background: rgba(255,255,255,0.18);
+      color: #F4F1EB;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 12px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      background: var(--text);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--bg);
+      letter-spacing: -0.02em;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .logo-text em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .icon-btn svg { opacity: 0.55; }
+    .icon-btn:hover { background: var(--bg2); }
+
+    /* ─── SCREEN MANAGEMENT ─── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─── SCREEN 1: INPUT ─── */
+    .hero {
+      padding: 28px 20px 24px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border-radius: 20px;
+      padding: 4px 11px;
+      margin-bottom: 16px;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 42px;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero p {
+      font-size: 14.5px;
+      color: var(--text2);
+      line-height: 1.55;
+      max-width: 300px;
+    }
+
+    /* Upload area */
+    .upload-section {
+      padding: 0 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .upload-zone {
+      background: var(--surface);
+      border: 2px dashed var(--border2);
+      border-radius: var(--r2);
+      padding: 36px 20px 28px;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+    .upload-icon-wrap {
+      width: 64px;
+      height: 64px;
+      background: var(--bg2);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .upload-icon-wrap svg { opacity: 0.5; }
+    .upload-zone h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .upload-zone p {
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .photo-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .photo-btn {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 14px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .photo-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .photo-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .photo-btn.primary svg { stroke: #fff; }
+    .photo-btn-label {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .photo-btn.primary .photo-btn-label { color: #fff; }
+    .photo-btn-sub {
+      font-size: 11px;
+      color: var(--text3);
+    }
+    .photo-btn.primary .photo-btn-sub { color: rgba(255,255,255,0.7); }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .mode-pill {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text2);
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+    .mode-pill.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    /* Text input */
+    .text-input-section {
+      padding: 0 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .text-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .text-input-row input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .text-input-row input:focus { border-color: var(--accent); }
+    .text-input-row input::placeholder { color: var(--text3); }
+    .analyze-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      padding: 0 22px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .analyze-btn:hover { opacity: 0.9; }
+
+    /* History strip */
+    .history-section {
+      padding: 20px 20px 0;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .history-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .history-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .history-strip::-webkit-scrollbar { display: none; }
+    .history-chip {
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .history-chip-emoji {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .history-chip-info { display: flex; flex-direction: column; gap: 1px; }
+    .history-chip-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .history-chip-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* ─── SCREEN 2: RESULTS ─── */
+    .results-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+    }
+
+    /* Object card */
+    .obj-card {
+      background: var(--text);
+      border-radius: var(--r2);
+      padding: 22px 22px 20px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .obj-card::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .obj-emoji {
+      font-size: 44px;
+      line-height: 1;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .obj-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: #FFFFFF;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .obj-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .obj-tag {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.10);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+    .obj-tag.accent { color: #FFCC88; background: rgba(255,180,60,0.18); }
+
+    /* Stima valore */
+    .value-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 20px 22px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .value-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .value-range {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      line-height: 1;
+    }
+    .value-range em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .value-right { text-align: right; }
+    .value-condition {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--dona-bg);
+      color: var(--dona);
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+    .value-bar-wrap {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .value-bar {
+      height: 6px;
+      background: var(--bg2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .value-bar-fill {
+      height: 100%;
+      width: 55%;
+      background: linear-gradient(90deg, var(--vendi), var(--accent));
+      border-radius: 99px;
+    }
+    .value-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+    .value-bar-labels span {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    /* Ideas */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .section-sub {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .ideas-group {
+      margin-bottom: 8px;
+    }
+    .group-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-radius: 8px;
+      padding: 4px 10px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .group-header.vendi  { background: var(--vendi-bg);    color: var(--vendi); }
+    .group-header.dona   { background: var(--dona-bg);     color: var(--dona); }
+    .group-header.trasforma { background: var(--trasforma-bg); color: var(--trasforma); }
+    .group-header.ripara { background: var(--ripara-bg);   color: var(--ripara); }
+
+    .ideas-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+    .idea-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 13px 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+    .idea-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .idea-dot.vendi     { background: var(--vendi); }
+    .idea-dot.dona      { background: var(--dona); }
+    .idea-dot.trasforma { background: var(--trasforma); }
+    .idea-dot.ripara    { background: var(--ripara); }
+    .idea-text {}
+    .idea-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 13.5px;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+    }
+    .idea-desc {
+      font-size: 12.5px;
+      color: var(--text2);
+      line-height: 1.45;
+    }
+
+    /* Listing card */
+    .listing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 20px 22px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .listing-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .listing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 7px;
+      padding: 4px 9px;
+    }
+    .listing-platform {
+      font-size: 11.5px;
+      color: var(--text3);
+    }
+    .listing-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15.5px;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .listing-body {
+      font-size: 12.5px;
+      color: var(--text2);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      border-left: 3px solid var(--border2);
+      padding-left: 12px;
+    }
+    .listing-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .listing-price {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+    .listing-copy-btn {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 12.5px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 9px;
+      padding: 8px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Vinted card */
+    .vinted-card {
+      background: var(--vinted-bg);
+      border: 1px solid rgba(9,182,109,0.20);
+      border-radius: var(--r2);
+      padding: 20px 22px;
+      margin-bottom: 12px;
+    }
+    .vinted-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .vinted-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--vinted);
+      letter-spacing: -0.02em;
+    }
+    .vinted-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: rgba(9,182,109,0.15);
+      color: var(--vinted);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+    .vinted-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .vinted-field {
+      background: rgba(255,255,255,0.6);
+      border-radius: 10px;
+      padding: 10px 13px;
+    }
+    .vinted-field-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--dona);
+      opacity: 0.7;
+      margin-bottom: 3px;
+    }
+    .vinted-field-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: #185A3A;
+    }
+    .vinted-field.full { grid-column: 1 / -1; }
+
+    /* Spare parts */
+    .spare-card {
+      background: var(--ripara-bg);
+      border: 1px solid rgba(24,105,197,0.15);
+      border-radius: var(--r2);
+      padding: 20px 22px;
+      margin-bottom: 12px;
+    }
+    .spare-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .spare-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--ripara);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .spare-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ripara);
+      letter-spacing: -0.02em;
+    }
+    .spare-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .spare-item {
+      background: rgba(255,255,255,0.6);
+      border-radius: 9px;
+      padding: 9px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .spare-item-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #0D2B5E;
+    }
+    .spare-item-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ripara);
+      font-weight: 500;
+    }
+
+    /* Feedback card */
+    .feedback-card {
+      background: var(--bg2);
+      border-radius: var(--r2);
+      padding: 22px;
+      margin-top: 12px;
+    }
+    .feedback-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .feedback-sub {
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-bottom: 16px;
+    }
+    .stars-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .star {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .star.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .feedback-questions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .feedback-q {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .feedback-q-text {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .yn-toggle {
+      display: flex;
+      gap: 4px;
+    }
+    .yn-btn {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 11.5px;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      border-radius: 7px;
+      padding: 4px 11px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all 0.15s;
+    }
+    .yn-btn.yes-active {
+      background: var(--dona);
+      border-color: var(--dona);
+      color: #fff;
+    }
+    .yn-btn.no-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .feedback-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 11px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+    }
+    .feedback-textarea:focus { border-color: var(--accent); }
+    .feedback-textarea::placeholder { color: var(--text3); }
+    .send-feedback-btn {
+      width: 100%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--r);
+      padding: 13px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s;
+    }
+    .send-feedback-btn:hover { opacity: 0.85; }
+
+    /* New scan btn */
+    .new-scan-bar {
+      position: sticky;
+      bottom: 0;
+      padding: 12px 20px;
+      background: linear-gradient(to top, var(--bg) 65%, transparent);
+      max-width: 480px;
+      margin: -20px auto 0;
+    }
+    .new-scan-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r2);
+      padding: 15px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.15s;
+    }
+    .new-scan-btn:hover { opacity: 0.9; }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .screen.active > * {
+      animation: fadeUp 0.35s ease both;
+    }
+    .results-wrap .obj-card   { animation: fadeUp 0.3s  0.05s ease both; }
+    .results-wrap .value-card { animation: fadeUp 0.3s  0.12s ease both; }
+    .results-wrap .ideas-wrap { animation: fadeUp 0.3s  0.19s ease both; }
+    .results-wrap .listing-card { animation: fadeUp 0.3s 0.26s ease both; }
+    .results-wrap .vinted-card  { animation: fadeUp 0.3s 0.30s ease both; }
+    .results-wrap .spare-card   { animation: fadeUp 0.3s 0.34s ease both; }
+    .results-wrap .feedback-card { animation: fadeUp 0.3s 0.38s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- Mockup banner with screen switcher -->
+<div class="mockup-banner">
+  <span>MOCKUP UI v2</span>
+  <div class="screen-toggle">
+    <button class="active" onclick="showScreen('input', this)">Input</button>
+    <button onclick="showScreen('results', this)">Risultati</button>
+  </div>
+  <span>Solo prototipo</span>
+</div>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">RM</div>
+    <div class="logo-text">Re<em>Maker</em></div>
+  </div>
+  <div class="header-actions">
+    <div class="icon-btn">
+      <!-- history icon -->
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.68"/></svg>
+    </div>
+    <div class="icon-btn">
+      <!-- settings icon -->
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ SCREEN 1: INPUT ══════════ -->
+<div class="screen active" id="screen-input">
+
+  <div class="hero">
+    <div class="hero-tag">AI per la circular economy</div>
+    <h1>Non buttare.<br><em>Reinventa.</em></h1>
+    <p>Fotografa qualsiasi oggetto: in 30 secondi sai quanto vale, dove venderlo e come ridargli vita.</p>
+  </div>
+
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <div class="mode-pill active" id="pill-foto" onclick="setMode('foto')">Foto</div>
+    <div class="mode-pill" id="pill-testo" onclick="setMode('testo')">Testo</div>
+  </div>
+
+  <!-- Photo mode -->
+  <div class="upload-section" id="mode-foto">
+    <div class="upload-zone">
+      <div class="upload-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <h3>Trascina o scegli una foto</h3>
+      <p>JPG, PNG, WEBP — max 20MB</p>
+    </div>
+    <div class="photo-btns">
+      <div class="photo-btn primary">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div class="photo-btn-label">Scatta foto</div>
+        <div class="photo-btn-sub">Fotocamera</div>
+      </div>
+      <div class="photo-btn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <div class="photo-btn-label">Scegli immagine</div>
+        <div class="photo-btn-sub">Galleria / file</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text mode -->
+  <div class="text-input-section" id="mode-testo" style="display:none">
+    <div class="text-input-row">
+      <input type="text" placeholder="Es. MacBook Pro 2019 con schermo rotto...">
+      <button class="analyze-btn">
+        Analizza
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cronologia -->
+  <div class="history-section">
+    <div class="history-label">Ultimi scansionati</div>
+    <div class="history-strip">
+      <div class="history-chip">
+        <span class="history-chip-emoji">👟</span>
+        <div class="history-chip-info">
+          <span class="history-chip-name">Nike Air Max</span>
+          <span class="history-chip-price">€35–€60</span>
+        </div>
+      </div>
+      <div class="history-chip">
+        <span class="history-chip-emoji">📱</span>
+        <div class="history-chip-info">
+          <span class="history-chip-name">iPhone 11</span>
+          <span class="history-chip-price">€90–€130</span>
+        </div>
+      </div>
+      <div class="history-chip">
+        <span class="history-chip-emoji">🖥️</span>
+        <div class="history-chip-info">
+          <span class="history-chip-name">Monitor 27"</span>
+          <span class="history-chip-price">€40–€80</span>
+        </div>
+      </div>
+      <div class="history-chip">
+        <span class="history-chip-emoji">🎸</span>
+        <div class="history-chip-info">
+          <span class="history-chip-name">Chitarra Fender</span>
+          <span class="history-chip-price">€120–€200</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ SCREEN 2: RESULTS ══════════ -->
+<div class="screen" id="screen-results">
+  <div class="results-wrap">
+
+    <!-- Oggetto identificato -->
+    <div class="obj-card">
+      <span class="obj-emoji">👟</span>
+      <div class="obj-name">Nike Air Max 90<br>Bianche/Nere</div>
+      <div class="obj-tags">
+        <span class="obj-tag">Scarpe da ginnastica</span>
+        <span class="obj-tag">Taglia 42</span>
+        <span class="obj-tag accent">Condizione: buono</span>
+        <span class="obj-tag">Moda uomo</span>
+      </div>
+    </div>
+
+    <!-- Stima valore -->
+    <div class="value-card" style="display:block;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div class="value-label">Stima di mercato</div>
+          <div class="value-range"><em>€35</em> — €65</div>
+        </div>
+        <div class="value-right">
+          <div class="value-label" style="text-align:right;">Stato</div>
+          <span class="value-condition">Buono</span>
+        </div>
+      </div>
+      <div class="value-bar-wrap">
+        <div class="value-bar"><div class="value-bar-fill"></div></div>
+        <div class="value-bar-labels">
+          <span>€0</span>
+          <span>Posizione nel mercato: media</span>
+          <span>€120</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ideas -->
+    <div class="ideas-wrap">
+      <div class="section-header">
+        <span class="section-title">Cosa puoi fare</span>
+        <span class="section-sub">6 idee</span>
+      </div>
+
+      <div class="ideas-group">
+        <div class="group-header vendi">Vendi</div>
+        <div class="ideas-grid">
+          <div class="idea-card">
+            <div class="idea-dot vendi"></div>
+            <div class="idea-text">
+              <div class="idea-title">Vendi su Vinted o eBay</div>
+              <div class="idea-desc">Buona domanda per Nike Air Max usate in ottime condizioni. Prezzo consigliato €45–€55.</div>
+            </div>
+          </div>
+          <div class="idea-card">
+            <div class="idea-dot vendi"></div>
+            <div class="idea-text">
+              <div class="idea-title">Subito.it / Facebook Marketplace</div>
+              <div class="idea-desc">Piattaforme locali: vendi senza spedizione, tratta di persona a €35–€45.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ideas-group">
+        <div class="group-header dona">Dona</div>
+        <div class="ideas-grid">
+          <div class="idea-card">
+            <div class="idea-dot dona"></div>
+            <div class="idea-text">
+              <div class="idea-title">Donale a un centro Caritas</div>
+              <div class="idea-desc">Le scarpe in buone condizioni sono tra gli articoli più richiesti nei centri di raccolta.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ideas-group">
+        <div class="group-header trasforma">Trasforma</div>
+        <div class="ideas-grid">
+          <div class="idea-card">
+            <div class="idea-dot trasforma"></div>
+            <div class="idea-text">
+              <div class="idea-title">Custom painting upcycling</div>
+              <div class="idea-desc">Con paint acrilici per sneaker puoi personalizzarle e rivenderle a prezzo premium.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ideas-group">
+        <div class="group-header ripara">Ripara</div>
+        <div class="ideas-grid">
+          <div class="idea-card">
+            <div class="idea-dot ripara"></div>
+            <div class="idea-text">
+              <div class="idea-title">Sostituzione suola</div>
+              <div class="idea-desc">Un calzolaio può rinnovare la suola per €15–€25, prolungando la vita delle scarpe.</div>
+            </div>
+          </div>
+          <div class="idea-card">
+            <div class="idea-dot ripara"></div>
+            <div class="idea-text">
+              <div class="idea-title">Lavaggio professionale</div>
+              <div class="idea-desc">Un servizio di sneaker cleaning aumenta il valore percepito del 20–30% al momento della vendita.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annuncio pronto -->
+    <div class="listing-card">
+      <div class="listing-header">
+        <span class="listing-badge">✦ Annuncio pronto</span>
+        <span class="listing-platform">Vinted / eBay / Subito</span>
+      </div>
+      <div class="listing-title">Nike Air Max 90 Bianche/Nere Taglia 42 — Condizioni Eccellenti</div>
+      <div class="listing-body">
+        Vendo Nike Air Max 90 originali in ottimo stato, usate pochissimo. Suola integra, tomaia pulita senza segni di usura. Taglia 42 EU / 8 UK. Colore: bianco/nero classico. Adatte a uso casual e sportivo. Spedizione rapida con imballaggio protetto. Possibilità di incontro di persona a Roma.
+      </div>
+      <div class="listing-footer">
+        <div class="listing-price">€49</div>
+        <button class="listing-copy-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copia annuncio
+        </button>
+      </div>
+    </div>
+
+    <!-- Vinted card -->
+    <div class="vinted-card">
+      <div class="vinted-header">
+        <span class="vinted-logo">Vinted</span>
+        <span class="vinted-tag">Pronto da pubblicare</span>
+      </div>
+      <div class="vinted-grid">
+        <div class="vinted-field">
+          <div class="vinted-field-label">Brand</div>
+          <div class="vinted-field-value">Nike</div>
+        </div>
+        <div class="vinted-field">
+          <div class="vinted-field-label">Taglia</div>
+          <div class="vinted-field-value">42 / L</div>
+        </div>
+        <div class="vinted-field">
+          <div class="vinted-field-label">Colore</div>
+          <div class="vinted-field-value">Bianco / Nero</div>
+        </div>
+        <div class="vinted-field">
+          <div class="vinted-field-label">Materiale</div>
+          <div class="vinted-field-value">Mesh / Gomma</div>
+        </div>
+        <div class="vinted-field">
+          <div class="vinted-field-label">Condizione</div>
+          <div class="vinted-field-value">Buono</div>
+        </div>
+        <div class="vinted-field">
+          <div class="vinted-field-label">Prezzo sug.</div>
+          <div class="vinted-field-value" style="color: var(--vinted); font-weight:600;">€45</div>
+        </div>
+        <div class="vinted-field full">
+          <div class="vinted-field-label">Categoria</div>
+          <div class="vinted-field-value">Sneakers e scarpe sportive uomo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ricambi -->
+    <div class="spare-card">
+      <div class="spare-header">
+        <div class="spare-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <span class="spare-title">Ricambi disponibili</span>
+      </div>
+      <div class="spare-list">
+        <div class="spare-item">
+          <span class="spare-item-name">Solette di ricambio Nike</span>
+          <span class="spare-item-price">~€12</span>
+        </div>
+        <div class="spare-item">
+          <span class="spare-item-name">Lacci bianchi 120cm</span>
+          <span class="spare-item-price">~€4</span>
+        </div>
+        <div class="spare-item">
+          <span class="spare-item-name">Crema impermeabilizzante</span>
+          <span class="spare-item-price">~€8</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-card">
+      <div class="feedback-title">Questa analisi ti è stata utile?</div>
+      <div class="feedback-sub">Il tuo feedback ci aiuta a migliorare ReMaker.</div>
+      <div class="stars-row">
+        <div class="star">★</div>
+        <div class="star">★</div>
+        <div class="star">★</div>
+        <div class="star active">★</div>
+        <div class="star active">★</div>
+      </div>
+      <div class="feedback-questions">
+        <div class="feedback-q">
+          <span class="feedback-q-text">Il risultato era accurato?</span>
+          <div class="yn-toggle">
+            <button class="yn-btn yes-active">Sì</button>
+            <button class="yn-btn">No</button>
+          </div>
+        </div>
+        <div class="feedback-q">
+          <span class="feedback-q-text">La useresti di nuovo?</span>
+          <div class="yn-toggle">
+            <button class="yn-btn yes-active">Sì</button>
+            <button class="yn-btn">No</button>
+          </div>
+        </div>
+        <div class="feedback-q">
+          <span class="feedback-q-text">La consiglieresti?</span>
+          <div class="yn-toggle">
+            <button class="yn-btn">Sì</button>
+            <button class="yn-btn">No</button>
+          </div>
+        </div>
+      </div>
+      <textarea class="feedback-textarea" rows="2" placeholder="Suggerimento per migliorare l'app..."></textarea>
+      <textarea class="feedback-textarea" rows="2" placeholder="Cosa non ti è piaciuto?"></textarea>
+      <button class="send-feedback-btn">Invia feedback</button>
+    </div>
+
+  </div>
+
+  <!-- Sticky bottom CTA -->
+  <div class="new-scan-bar">
+    <button class="new-scan-btn" onclick="showScreen('input', document.querySelector('.screen-toggle button'))">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuova scansione
+    </button>
+  </div>
+
+</div>
+
+<script>
+  function showScreen(name, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    document.querySelectorAll('.screen-toggle button').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setMode(mode) {
+    document.getElementById('mode-foto').style.display  = mode === 'foto'  ? 'block' : 'none';
+    document.getElementById('mode-testo').style.display = mode === 'testo' ? 'block' : 'none';
+    document.getElementById('pill-foto').classList.toggle('active', mode === 'foto');
+    document.getElementById('pill-testo').classList.toggle('active', mode === 'testo');
+  }
+
+  // Stars interaction
+  document.querySelectorAll('.star').forEach((star, i, arr) => {
+    star.addEventListener('click', () => {
+      arr.forEach((s, j) => s.classList.toggle('active', j <= i));
+    });
+  });
+
+  // Y/N toggles
+  document.querySelectorAll('.yn-toggle').forEach(toggle => {
+    toggle.querySelectorAll('.yn-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        toggle.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('yes-active', 'no-active'));
+        btn.classList.add(i === 0 ? 'yes-active' : 'no-active');
+      });
+    });
+  });
+</script>
+</body>
+</html>

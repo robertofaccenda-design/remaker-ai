@@ -1,2 +1,11 @@
 *.docx
 .DS_Store
+
+# Variabili d'ambiente — NON caricare mai su GitHub
+.env
+remaker-bot/.env
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo

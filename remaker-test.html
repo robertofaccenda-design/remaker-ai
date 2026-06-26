@@ -254,10 +254,47 @@
     }
 
     /* Drop zone */
+    /* Camera / gallery buttons */
+    .photo-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn-photo-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 22px 12px;
+      border-radius: var(--r);
+      border: 1.5px solid var(--border);
+      background: var(--bg2);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-photo-action input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .btn-photo-action:hover { border-color: var(--terra); background: var(--terra-dim); }
+    .btn-photo-action .pa-icon { font-size: 1.8rem; line-height: 1; }
+    .btn-photo-action .pa-label { font-size: 0.8rem; font-weight: 500; color: var(--cream-dim); }
+    .btn-photo-action .pa-sub { font-size: 0.68rem; color: var(--cream-sub); font-weight: 300; }
+    .btn-camera { border-color: rgba(196,98,45,0.3); }
+    .btn-camera:hover { border-color: var(--terra); }
+
     .drop-zone {
       border: 1.5px dashed var(--border);
       border-radius: var(--r);
-      padding: 40px 20px;
+      padding: 14px 20px;
       text-align: center;
       cursor: pointer;
       transition: all 0.25s;
@@ -519,6 +556,7 @@
     .value-card {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-left: 3px solid var(--terra);
       border-radius: var(--r2);
       padding: 24px 28px;
       margin-bottom: 16px;
@@ -572,6 +610,31 @@
     /* Ideas section */
     .ideas-section { margin-bottom: 16px; }
     .ideas-section .card-label { margin-bottom: 14px; }
+    .ideas-group { margin-bottom: 20px; }
+    .ideas-group:last-child { margin-bottom: 0; }
+    .ideas-group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      border-left-width: 3px;
+      border-left-style: solid;
+    }
+    .ideas-group-header span {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .group-vendi   { border-left-color: var(--gold);   }
+    .group-vendi   span { color: var(--gold); }
+    .group-dona    { border-left-color: var(--olive);  }
+    .group-dona    span { color: var(--olive); }
+    .group-trasforma { border-left-color: var(--terra); }
+    .group-trasforma span { color: var(--terra); }
+    .group-ripara  { border-left-color: #7ab8d4; }
+    .group-ripara  span { color: #7ab8d4; }
     .ideas-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -658,6 +721,7 @@
     .listing-card {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
       border-radius: var(--r2);
       padding: 24px 28px;
       margin-bottom: 16px;
@@ -818,6 +882,7 @@
     .spare-card {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-left: 3px solid #7ab8d4;
       border-radius: var(--r2);
       padding: 24px 28px;
       margin-bottom: 16px;
@@ -1013,6 +1078,181 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Vinted Card ── */
+    .vinted-card {
+      background: var(--surface);
+      border: 1px solid rgba(9,182,109,0.25);
+      border-left: 3px solid #09b66d;
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .vinted-card.visible { display: block; }
+    .vinted-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .vinted-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #09b66d;
+    }
+    .vinted-logo-dot {
+      width: 8px; height: 8px;
+      background: #09b66d;
+      border-radius: 50%;
+    }
+    .vinted-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 520px) { .vinted-fields { grid-template-columns: 1fr; } }
+    .vinted-field {
+      background: var(--bg2);
+      border-radius: var(--r);
+      padding: 10px 14px;
+    }
+    .vf-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #09b66d;
+      margin-bottom: 4px;
+    }
+    .vf-value {
+      font-size: 0.88rem;
+      color: var(--cream);
+      font-weight: 400;
+    }
+    .vinted-field.full { grid-column: 1 / -1; }
+    .btn-copy-vinted {
+      width: 100%;
+      background: rgba(9,182,109,0.1);
+      border: 1px solid rgba(9,182,109,0.35);
+      border-radius: var(--r2);
+      padding: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #09b66d;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-copy-vinted:hover { background: rgba(9,182,109,0.2); }
+
+    /* ── Remove.bg button ── */
+    .btn-removebg {
+      display: none;
+      width: 100%;
+      margin-top: 10px;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: var(--cream-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-removebg.visible { display: flex; }
+    .btn-removebg:hover { border-color: var(--terra); color: var(--cream); }
+    .btn-removebg:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Feedback Beta Card ── */
+    .feedback-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 24px 28px;
+      margin-top: 16px;
+    }
+    .fb-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .fb-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+    .fb-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 500; margin-bottom: 3px; }
+    .fb-sub { font-size: 0.78rem; color: var(--cream-sub); font-weight: 300; }
+    .fb-label { font-size: 0.82rem; color: var(--cream-dim); margin-bottom: 10px; font-weight: 300; }
+    .star-row { display: flex; gap: 6px; margin-bottom: 18px; }
+    .star {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: var(--border);
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.15s, transform 0.1s;
+    }
+    .star:hover, .star.active { color: var(--gold); transform: scale(1.1); }
+    .fb-checks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .fb-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--cream-dim);
+      cursor: pointer;
+      font-weight: 300;
+    }
+    .fb-check input[type="checkbox"] { accent-color: var(--terra); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+    .fb-textarea {
+      width: 100%;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--cream);
+      outline: none;
+      resize: none;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .fb-textarea:focus { border-color: var(--terra); }
+    .fb-textarea::placeholder { color: var(--cream-sub); }
+    .btn-fb-send {
+      width: 100%;
+      background: transparent;
+      border: 1.5px solid var(--terra);
+      border-radius: var(--r2);
+      padding: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--terra);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-fb-send:hover { background: var(--terra); color: white; }
+    .btn-fb-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .fb-sent { display: none; text-align: center; padding: 10px 0; }
+    .fb-sent.visible { display: block; animation: fadeIn 0.4s ease; }
+    .fb-sent-icon { font-size: 2rem; color: var(--olive); margin-bottom: 8px; }
+    .fb-sent-msg { font-size: 0.9rem; color: var(--cream-dim); font-weight: 300; }
   </style>
 </head>
 
@@ -1081,17 +1321,33 @@
       <div class="input-card">
         <!-- Photo input -->
         <div id="photoSection">
-          <div class="drop-zone" id="dropZone">
-            <input type="file" accept="image/*" id="fileInput" onchange="handleFile(this.files[0])">
-            <div class="drop-icon">📷</div>
-            <div class="drop-text-main">Trascina o clicca per caricare una foto</div>
-            <div class="drop-text-sub">JPG, PNG, WEBP — max 10MB</div>
+          <div id="dropZone">
+            <!-- Pulsanti fotocamera + galleria -->
+            <div class="photo-actions">
+              <div class="btn-photo-action btn-camera">
+                <input type="file" accept="image/*" capture="environment" id="cameraInput" onchange="handleFile(this.files[0])">
+                <div class="pa-label">Scatta foto</div>
+                <div class="pa-sub">Fotocamera</div>
+              </div>
+              <div class="btn-photo-action">
+                <input type="file" accept="image/*" id="fileInput" onchange="handleFile(this.files[0])">
+                <div class="pa-label">Scegli immagine</div>
+                <div class="pa-sub">Galleria / file</div>
+              </div>
+            </div>
+            <!-- Drag & drop (desktop) -->
+            <div class="drop-zone" id="dropZoneInner">
+              <div class="drop-text-sub">oppure trascina qui una foto</div>
+            </div>
           </div>
           <div id="previewSection" style="display:none">
             <div class="preview-wrap">
               <img id="previewImg" src="" alt="anteprima">
               <button class="preview-remove" onclick="removeImage()" title="Rimuovi">✕</button>
             </div>
+            <button class="btn-removebg" id="btnRemoveBg" onclick="removeBackground()">
+              ✂️ Rimuovi sfondo
+            </button>
           </div>
         </div>
 
@@ -1164,7 +1420,7 @@
       <!-- Ideas -->
       <div class="ideas-section">
         <div class="card-label">♻️ Idee di riuso</div>
-        <div class="ideas-grid" id="ideasGrid"></div>
+        <div id="ideasGrid"></div>
       </div>
 
       <!-- Listing -->
@@ -1208,6 +1464,61 @@
         <div class="spare-markets" id="spareMarkets"></div>
       </div>
 
+      <!-- Vinted Card -->
+      <div class="vinted-card" id="vintedCard">
+        <div class="vinted-header">
+          <div class="vinted-logo"><div class="vinted-logo-dot"></div> Vinted — Campi pronti</div>
+        </div>
+        <div class="vinted-fields" id="vintedFields"></div>
+        <button class="btn-copy-vinted" onclick="copyVinted()">Copia tutti i campi per Vinted</button>
+      </div>
+
+      <!-- Feedback Beta -->
+      <div class="feedback-card" id="feedbackCard">
+        <div class="fb-header">
+          <span class="fb-icon">💬</span>
+          <div>
+            <div class="fb-title">Cosa ne pensi?</div>
+            <div class="fb-sub">Stai testando la versione beta — il tuo feedback è prezioso.</div>
+          </div>
+        </div>
+
+        <div class="fb-body" id="fbBody">
+          <!-- Stelle -->
+          <div class="fb-label">Quanto è stato utile il risultato?</div>
+          <div class="star-row" id="starRow">
+            <button class="star" data-v="1" onclick="setStar(1)" title="1 stella">★</button>
+            <button class="star" data-v="2" onclick="setStar(2)" title="2 stelle">★</button>
+            <button class="star" data-v="3" onclick="setStar(3)" title="3 stelle">★</button>
+            <button class="star" data-v="4" onclick="setStar(4)" title="4 stelle">★</button>
+            <button class="star" data-v="5" onclick="setStar(5)" title="5 stelle">★</button>
+          </div>
+
+          <!-- Checkboxes rapide -->
+          <div class="fb-checks">
+            <label class="fb-check"><input type="checkbox" id="chkAccurato"> Il risultato era accurato</label>
+            <label class="fb-check"><input type="checkbox" id="chkUseresti"> Lo useresti davvero</label>
+            <label class="fb-check"><input type="checkbox" id="chkConsigli"> Lo consiglieresti a qualcuno</label>
+          </div>
+
+          <!-- Suggerimento -->
+          <div class="fb-label" style="margin-top:4px">Dammi un suggerimento su come migliorare questa app</div>
+          <textarea class="fb-textarea" id="fbSuggerimento" placeholder="Es. vorrei poter filtrare per categoria…" rows="3"></textarea>
+
+          <!-- Cosa non è piaciuto -->
+          <div class="fb-label">Dimmi cosa non ti è piaciuto</div>
+          <textarea class="fb-textarea" id="fbNonPiaciuto" placeholder="Es. i risultati non erano accurati, l'interfaccia è confusa…" rows="3"></textarea>
+
+          <button class="btn-fb-send" id="btnFbSend" onclick="sendFeedback()">Invia feedback</button>
+        </div>
+
+        <!-- Stato post-invio -->
+        <div class="fb-sent" id="fbSent">
+          <div class="fb-sent-icon">✓</div>
+          <div class="fb-sent-msg">Grazie! Il tuo feedback è stato registrato.</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer -->
@@ -1237,6 +1548,9 @@
     let currentListingText = '';
 
     // ── API Key ─────────────────────────────────────────────────────────
+    // Chiave condivisa per il beta test — non condividere questo file pubblicamente
+    const SHARED_API_KEY = 'AQ.Ab8RN6ItxirFf7-9XR_pX3SB4pdFqU1HdFTvlF8Zo22MFNkEsA';
+
     function saveApiKey() {
       const key = document.getElementById('apiKeyInput').value.trim();
       if (!key) return;
@@ -1246,7 +1560,164 @@
     }
 
     function getApiKey() {
-      return localStorage.getItem('rm_gemini_key') || '';
+      return localStorage.getItem('rm_gemini_key') || SHARED_API_KEY;
+    }
+
+    // ── Vinted ───────────────────────────────────────────────────────────
+    let vintedText = '';
+
+    function renderVinted(d) {
+      if (d.vinted !== 'si') {
+        document.getElementById('vintedCard').classList.remove('visible');
+        return;
+      }
+      const condMap = {
+        nuovo_con_etichetta: 'Nuovo con etichetta',
+        nuovo_senza_etichetta: 'Nuovo senza etichetta',
+        ottimo: 'Ottimo',
+        buono: 'Buono',
+        soddisfacente: 'Soddisfacente'
+      };
+      const fields = [
+        { label: 'Brand',      value: d.vb   || '—' },
+        { label: 'Taglia',     value: d.vs   || '—' },
+        { label: 'Colore',     value: d.vc   || '—' },
+        { label: 'Materiale',  value: d.vm   || '—' },
+        { label: 'Condizione', value: condMap[d.vcond] || d.vcond || '—' },
+        { label: 'Categoria',  value: d.vcat || '—', full: true },
+        { label: 'Titolo',     value: d.at   || '—', full: true },
+        { label: 'Descrizione',value: d.ad   || '—', full: true },
+        { label: 'Prezzo',     value: d.ap ? `€${d.ap}` : '—' },
+      ];
+      const wrap = document.getElementById('vintedFields');
+      wrap.innerHTML = fields.map(f =>
+        `<div class="vinted-field${f.full ? ' full' : ''}">
+          <div class="vf-label">${f.label}</div>
+          <div class="vf-value">${escHtml(f.value)}</div>
+        </div>`
+      ).join('');
+      vintedText = fields.map(f => `${f.label}: ${f.value}`).join('\n');
+      document.getElementById('vintedCard').classList.add('visible');
+    }
+
+    async function copyVinted() {
+      try {
+        await navigator.clipboard.writeText(vintedText);
+        showToast('✓ Campi Vinted copiati');
+      } catch { showToast('Copia manuale dai campi'); }
+    }
+
+    // ── Remove.bg ────────────────────────────────────────────────────────
+    // Ottieni la tua chiave gratuita su https://www.remove.bg/api
+    const REMOVE_BG_KEY = 'Es6c6wxtU6Y4bAck8RNrNQns';
+
+    async function removeBackground() {
+      if (REMOVE_BG_KEY === 'INSERISCI_QUI_REMOVE_BG_KEY') {
+        showToast('⚠ Configura la chiave remove.bg nelle impostazioni');
+        return;
+      }
+      const btn = document.getElementById('btnRemoveBg');
+      btn.disabled = true;
+      btn.textContent = '⏳ Elaborazione…';
+      try {
+        const formData = new FormData();
+        // Converti base64 → Blob
+        const byteString = atob(imageBase64);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+        const blob = new Blob([ab], { type: imageMimeType });
+        formData.append('image_file', blob, 'image.jpg');
+        formData.append('size', 'auto');
+
+        const res = await fetch('https://api.remove.bg/v1.0/removebg', {
+          method: 'POST',
+          headers: { 'X-Api-Key': REMOVE_BG_KEY },
+          body: formData
+        });
+        if (!res.ok) throw new Error(`remove.bg: ${res.status}`);
+        const resultBlob = await res.blob();
+        const url = URL.createObjectURL(resultBlob);
+        // Aggiorna preview e base64 per l'analisi successiva
+        document.getElementById('previewImg').src = url;
+        const reader = new FileReader();
+        reader.onload = e => {
+          imageBase64 = e.target.result.split(',')[1];
+          imageMimeType = 'image/png';
+        };
+        reader.readAsDataURL(resultBlob);
+        showToast('✓ Sfondo rimosso');
+        btn.textContent = '✓ Sfondo rimosso';
+      } catch (err) {
+        showToast('⚠ Errore remove.bg: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '✂️ Rimuovi sfondo';
+      }
+    }
+
+    // ── Feedback ─────────────────────────────────────────────────────────
+    // Sostituisci con l'URL del tuo Google Apps Script Web App dopo il deploy
+    const FEEDBACK_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxKmC81X6VVuY1sM0UAVc8Ip6riCkXFjlJisV3pLx_G5N1TQJ7AStGUyGCd16mmCIObzQ/exec';
+
+    let fbStar = 0;
+    let fbOggetto = '';
+
+    function setStar(n) {
+      fbStar = n;
+      document.querySelectorAll('.star').forEach((s, i) => {
+        s.classList.toggle('active', i < n);
+      });
+    }
+
+    function showFeedbackCard(oggetto) {
+      fbOggetto = oggetto || '';
+      fbStar = 0;
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+      document.getElementById('chkAccurato').checked = false;
+      document.getElementById('chkUseresti').checked = false;
+      document.getElementById('chkConsigli').checked = false;
+      document.getElementById('fbSuggerimento').value = '';
+      document.getElementById('fbNonPiaciuto').value = '';
+      document.getElementById('fbBody').style.display = 'block';
+      document.getElementById('fbSent').classList.remove('visible');
+      document.getElementById('btnFbSend').disabled = false;
+      document.getElementById('feedbackCard').style.display = 'block';
+    }
+
+    async function sendFeedback() {
+      const btn = document.getElementById('btnFbSend');
+      btn.disabled = true;
+      btn.textContent = 'Invio in corso…';
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        oggetto: fbOggetto,
+        stelle: fbStar,
+        accurato: document.getElementById('chkAccurato').checked ? 'sì' : 'no',
+        lo_useresti: document.getElementById('chkUseresti').checked ? 'sì' : 'no',
+        consiglieresti: document.getElementById('chkConsigli').checked ? 'sì' : 'no',
+        suggerimento: document.getElementById('fbSuggerimento').value.trim(),
+        non_piaciuto: document.getElementById('fbNonPiaciuto').value.trim()
+      };
+
+      // Se URL non configurato, simula comunque l'invio (test locale)
+      if (FEEDBACK_SHEET_URL === 'INSERISCI_QUI_URL_APPS_SCRIPT') {
+        console.log('Feedback (sheet non configurato):', payload);
+        document.getElementById('fbBody').style.display = 'none';
+        document.getElementById('fbSent').classList.add('visible');
+        return;
+      }
+
+      try {
+        const url = new URL(FEEDBACK_SHEET_URL);
+        Object.entries(payload).forEach(([k, v]) => url.searchParams.append(k, String(v)));
+        await fetch(url.toString(), { mode: 'no-cors' });
+      } catch(e) {
+        console.warn('Feedback send error:', e);
+      } finally {
+        document.getElementById('fbBody').style.display = 'none';
+        document.getElementById('fbSent').classList.add('visible');
+      }
     }
 
     document.getElementById('btnSettings').addEventListener('click', () => {
@@ -1292,6 +1763,7 @@
         document.getElementById('previewImg').src = dataUrl;
         document.getElementById('dropZone').style.display = 'none';
         document.getElementById('previewSection').style.display = 'block';
+        document.getElementById('btnRemoveBg').classList.add('visible');
       };
       reader.readAsDataURL(file);
     }
@@ -1299,16 +1771,21 @@
     function removeImage() {
       imageBase64 = null; imageMimeType = null;
       document.getElementById('fileInput').value = '';
+      document.getElementById('cameraInput').value = '';
       document.getElementById('dropZone').style.display = 'block';
       document.getElementById('previewSection').style.display = 'none';
+      const rbBtn = document.getElementById('btnRemoveBg');
+      rbBtn.classList.remove('visible');
+      rbBtn.disabled = false;
+      rbBtn.textContent = '✂️ Rimuovi sfondo';
     }
 
-    // Drag & drop
-    const dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault(); dropZone.classList.remove('dragover');
+    // Drag & drop sul pannello interno
+    const dropZoneInner = document.getElementById('dropZoneInner');
+    dropZoneInner.addEventListener('dragover', e => { e.preventDefault(); dropZoneInner.classList.add('dragover'); });
+    dropZoneInner.addEventListener('dragleave', () => dropZoneInner.classList.remove('dragover'));
+    dropZoneInner.addEventListener('drop', e => {
+      e.preventDefault(); dropZoneInner.classList.remove('dragover');
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) handleFile(file);
     });
@@ -1379,6 +1856,15 @@ r1=nome ricambio o accessorio specifico 1
 r2=nome ricambio o accessorio specifico 2
 r3=nome ricambio o accessorio specifico 3
 
+Se l'oggetto è un capo di abbigliamento, scarpe o accessorio moda, aggiungi ANCHE questi campi Vinted:
+vinted=si
+vb=brand o marca (scrivi "Senza marca" se non riconoscibile)
+vs=taglia (es. S, M, L, XL, 42, 38, oppure Unica)
+vc=colore principale
+vm=materiale principale (es. cotone, lana, poliestere)
+vcat=categoria Vinted precisa (es. "Maglioni e cardigan donna", "Sneakers uomo", "Borse a tracolla")
+vcond=condizione Vinted (uno tra: nuovo_con_etichetta, nuovo_senza_etichetta, ottimo, buono, soddisfacente)
+
 Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona, trasforma, ripara. Contesto italiano. Non aggiungere mai simboli = nei valori.`;
 
       parts.push({ text: prompt });
@@ -1388,10 +1874,9 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ parts }],
-              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
+              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 4096 }
             })
           }
         );
@@ -1470,22 +1955,36 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
         document.getElementById('valBar').style.width = pct + '%';
       }, 100);
 
-      // Ideas — 6 item flat (i0..i5)
+      // Ideas — 6 item flat (i0..i5), raggruppate per categoria
       const grid = document.getElementById('ideasGrid');
       grid.innerHTML = '';
       const tagLabel = { vendi:'Vendi', dona:'Dona', trasforma:'Trasforma', ripara:'Ripara' };
+      const catOrder = ['vendi', 'dona', 'trasforma', 'ripara'];
+      const grouped = { vendi: [], dona: [], trasforma: [], ripara: [] };
       for (let i = 0; i < 6; i++) {
         const t = d[`i${i}t`], desc = d[`i${i}d`], cat = d[`i${i}c`] || 'vendi';
         if (!t) continue;
-        grid.innerHTML += `
-          <div class="idea-card">
-            <div class="idea-top">
-              <div class="idea-title">${escHtml(t)}</div>
-              <span class="tag-idea tag-${cat}">${tagLabel[cat] || cat}</span>
-            </div>
-            <div class="idea-desc">${escHtml(desc || '')}</div>
-          </div>`;
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push({ t, desc, cat });
       }
+      catOrder.forEach(cat => {
+        if (!grouped[cat] || !grouped[cat].length) return;
+        const label = tagLabel[cat] || cat;
+        let groupHtml = `<div class="ideas-group">
+          <div class="ideas-group-header group-${cat}"><span>${label}</span></div>
+          <div class="ideas-grid">`;
+        grouped[cat].forEach(({ t, desc }) => {
+          groupHtml += `
+            <div class="idea-card">
+              <div class="idea-top">
+                <div class="idea-title">${escHtml(t)}</div>
+              </div>
+              <div class="idea-desc">${escHtml(desc || '')}</div>
+            </div>`;
+        });
+        groupHtml += `</div></div>`;
+        grid.insertAdjacentHTML('beforeend', groupHtml);
+      });
 
       // Listing
       document.getElementById('listingTitle').textContent = d.at || '—';
@@ -1532,6 +2031,10 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
       document.getElementById('inputSection').style.display = 'none';
       document.getElementById('results').classList.add('visible');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Vinted e feedback — dopo che i risultati sono visibili
+      try { renderVinted(d); } catch(e) { console.warn('renderVinted error:', e); }
+      try { showFeedbackCard(d.o || ''); } catch(e) { console.warn('showFeedbackCard error:', e); }
     }
 
     // ── UI helpers ──────────────────────────────────────────────────────
@@ -1638,11 +2141,11 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
       const entry = {
         id: Date.now(),
         date: new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }),
-        emoji: parsed.emoji || '📦',
-        oggetto: parsed.oggetto || 'Oggetto',
-        categoria: parsed.categoria || '',
-        valMin: parsed.stima_valore?.min ?? null,
-        valMax: parsed.stima_valore?.max ?? null,
+        emoji: parsed.e || '📦',
+        oggetto: parsed.o || 'Oggetto',
+        categoria: parsed.c || '',
+        valMin: parseInt(parsed.vn) || null,
+        valMax: parseInt(parsed.vx) || null,
         data: parsed
       };
       list.unshift(entry);
@@ -1702,12 +2205,8 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
         document.getElementById('fileBanner').classList.add('show');
         document.querySelector('.wrap').style.paddingTop = '70px';
       }
-      // Show API panel if no key set
-      if (!getApiKey()) {
-        setTimeout(() => {
-          document.getElementById('apiPanel').classList.add('open');
-        }, 600);
-      }
+      // API panel — non si apre automaticamente (chiave condivisa incorporata)
+      // Per cambiarla usa il pulsante ⚙ in alto a destra
       // Load history
       renderHistory();
     });
