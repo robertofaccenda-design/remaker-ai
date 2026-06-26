@@ -1,6 +1,6 @@
 """
 ReMaker AI — Telegram Bot MVP
-Versione: 1.1
+Versione: 1.2
 Autore: Roberto Faccenda
 
 Flusso:
@@ -10,15 +10,16 @@ Flusso:
   4. Tempo medio di risposta: < 15 secondi
 
 Deploy:
-  - Locale: usa polling (WEBHOOK_URL non impostato)
-  - Render/cloud: usa webhook (imposta WEBHOOK_URL nelle variabili d'ambiente)
+  - Locale e Render: usa polling + health server aiohttp sullo stesso event loop
 """
 
 import os
+import asyncio
 import logging
 import base64
 from io import BytesIO
 
+from aiohttp import web as aiohttp_web
 from dotenv import load_dotenv
 from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -32,39 +33,7 @@ from telegram.ext import (
 )
 from telegram.constants import ParseMode, ChatAction
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import threading
-
 load_dotenv()
-
-# URL pubblico del servizio su Render (es. https://remaker-bot.onrender.com)
-# Se non impostato, il bot usa il polling (modalità locale)
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "")
-PORT = int(os.environ.get("PORT", 8443))
-
-
-# ── Health check server (per UptimeRobot) ─────────────────────────────────────
-# Risponde a GET /health con 200 OK — mantiene Render sveglio
-
-class HealthHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/health":
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"OK")
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-    def log_message(self, format, *args):
-        pass  # Silenzia i log HTTP per non sporcare l'output
-
-
-def avvia_health_server(porta: int = 8080):
-    server = HTTPServer(("0.0.0.0", porta), HealthHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    logger.info(f"Health check server attivo su porta {porta} → GET /health")
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -73,9 +42,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ── Clients ───────────────────────────────────────────────────────────────────
+# ── Config ────────────────────────────────────────────────────────────────────
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+PORT = int(os.environ.get("PORT", 8080))
 
 # ── Prompt di sistema ─────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """Sei ReMaker AI, un assistente italiano esperto nel dare una seconda vita agli oggetti inutilizzati.
@@ -117,11 +87,9 @@ REGOLE:
 # ── Helper: analisi oggetto ───────────────────────────────────────────────────
 
 async def analizza_oggetto(testo: str = None, immagine_bytes: bytes = None) -> str:
-    """Chiama GPT-4o con testo e/o immagine e restituisce la risposta formattata."""
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     if immagine_bytes:
-        # Encode immagine in base64
         b64_image = base64.b64encode(immagine_bytes).decode("utf-8")
         content = [
             {
@@ -132,19 +100,20 @@ async def analizza_oggetto(testo: str = None, immagine_bytes: bytes = None) -> s
                 },
             }
         ]
-        if testo:
-            content.append({"type": "text", "text": testo})
-        else:
-            content.append({"type": "text", "text": "Analizza questo oggetto."})
+        content.append({"type": "text", "text": testo or "Analizza questo oggetto."})
         messages.append({"role": "user", "content": content})
     else:
         messages.append({"role": "user", "content": testo or "Analizza questo oggetto."})
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        max_tokens=1000,
-        temperature=0.4,
+    loop = asyncio.get_event_loop()
+    response = await loop.run_in_executor(
+        None,
+        lambda: openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            max_tokens=1000,
+            temperature=0.4,
+        )
     )
     return response.choices[0].message.content
 
@@ -206,25 +175,19 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.chat.send_action(ChatAction.TYPING)
 
-    # Scarica la foto in alta risoluzione
     photo = update.message.photo[-1]
     file = await context.bot.get_file(photo.file_id)
     buf = BytesIO()
     await file.download_to_memory(buf)
     image_bytes = buf.getvalue()
-
     caption = update.message.caption or None
 
-    msg = await update.message.reply_text(
-        "⏳ Sto analizzando l'oggetto... (~10 secondi)"
-    )
+    msg = await update.message.reply_text("⏳ Sto analizzando l'oggetto... (~10 secondi)")
 
     try:
         risposta = await analizza_oggetto(testo=caption, immagine_bytes=image_bytes)
         await msg.delete()
-        keyboard = [
-            [InlineKeyboardButton("📸 Analizza un altro oggetto", callback_data="altro")]
-        ]
+        keyboard = [[InlineKeyboardButton("📸 Analizza un altro oggetto", callback_data="altro")]]
         await update.message.reply_text(
             risposta,
             parse_mode=ParseMode.MARKDOWN,
@@ -232,7 +195,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         logger.info(f"Analisi completata per utente {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Errore analisi: {e}")
+        logger.error(f"Errore analisi foto: {e}")
         await msg.edit_text(
             "❌ Si è verificato un errore. Prova a inviare di nuovo la foto, "
             "oppure scrivimi una descrizione testuale dell'oggetto."
@@ -244,11 +207,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     testo = update.message.text.strip()
 
-    # Ignora comandi non riconosciuti
     if testo.startswith("/"):
-        await update.message.reply_text(
-            "Comando non riconosciuto. Usa /help per vedere come funziona."
-        )
+        await update.message.reply_text("Comando non riconosciuto. Usa /help per vedere come funziona.")
         return
 
     await update.message.chat.send_action(ChatAction.TYPING)
@@ -257,9 +217,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     try:
         risposta = await analizza_oggetto(testo=testo)
         await msg.delete()
-        keyboard = [
-            [InlineKeyboardButton("📸 Analizza un altro oggetto", callback_data="altro")]
-        ]
+        keyboard = [[InlineKeyboardButton("📸 Analizza un altro oggetto", callback_data="altro")]]
         await update.message.reply_text(
             risposta,
             parse_mode=ParseMode.MARKDOWN,
@@ -267,9 +225,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
     except Exception as e:
         logger.error(f"Errore analisi testo: {e}")
-        await msg.edit_text(
-            "❌ Si è verificato un errore. Riprova tra qualche secondo."
-        )
+        await msg.edit_text("❌ Si è verificato un errore. Riprova tra qualche secondo.")
 
 
 # ── Handler: callback "altro" ─────────────────────────────────────────────────
@@ -277,52 +233,51 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 async def callback_altro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
-    await query.message.reply_text(
-        "📸 Manda la foto del prossimo oggetto, oppure descrivimelo con parole!"
-    )
+    await query.message.reply_text("📸 Manda la foto del prossimo oggetto, oppure descrivimelo con parole!")
+
+
+# ── Health check server (aiohttp, per UptimeRobot) ───────────────────────────
+
+async def health(request):
+    return aiohttp_web.Response(text="OK")
+
+async def avvia_health_server():
+    app = aiohttp_web.Application()
+    app.router.add_get("/health", health)
+    app.router.add_get("/", health)
+    runner = aiohttp_web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp_web.TCPSite(runner, "0.0.0.0", PORT)
+    await site.start()
+    logger.info(f"Health server attivo su porta {PORT} → GET /health")
 
 
 # ── Avvio applicazione ────────────────────────────────────────────────────────
 
-def main() -> None:
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
+async def main():
+    # Health server (mantiene Render sveglio)
+    await avvia_health_server()
 
-    # Comandi
-    app.add_handler(CommandHandler("start", cmd_start))
-    app.add_handler(CommandHandler("help", cmd_help))
+    # Bot Telegram in polling
+    bot = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    # Foto
-    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    bot.add_handler(CommandHandler("start", cmd_start))
+    bot.add_handler(CommandHandler("help", cmd_help))
+    bot.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    bot.add_handler(CallbackQueryHandler(callback_altro, pattern="^altro$"))
+    bot.add_handler(CallbackQueryHandler(callback_handler))
 
-    # Testo libero
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    logger.info("ReMaker AI Bot avviato in modalità POLLING...")
 
-    # Callback bottoni
-    app.add_handler(CallbackQueryHandler(callback_altro, pattern="^altro$"))
-    app.add_handler(CallbackQueryHandler(callback_handler))
-
-    # Avvia health check server in background (solo in produzione)
-    if WEBHOOK_URL:
-        avvia_health_server(porta=8080)
-
-    if WEBHOOK_URL:
-        # ── Modalità WEBHOOK (Render / cloud) ────────────────────────────────
-        # Render assegna la porta tramite la variabile PORT
-        webhook_path = f"/webhook/{TELEGRAM_TOKEN}"
-        full_url = f"{WEBHOOK_URL}{webhook_path}"
-        logger.info(f"ReMaker AI Bot avviato in modalità WEBHOOK → {full_url}")
-        app.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=webhook_path,
-            webhook_url=full_url,
-            allowed_updates=Update.ALL_TYPES,
-        )
-    else:
-        # ── Modalità POLLING (locale / sviluppo) ─────────────────────────────
-        logger.info("ReMaker AI Bot avviato in modalità POLLING (locale)...")
-        app.run_polling(allowed_updates=Update.ALL_TYPES)
+    async with bot:
+        await bot.start()
+        await bot.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+        # Gira per sempre finché non viene interrotto
+        await asyncio.Event().wait()
+        await bot.updater.stop()
+        await bot.stop()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
