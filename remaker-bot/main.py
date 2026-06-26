@@ -1,6 +1,6 @@
 """
 ReMaker AI — Telegram Bot MVP
-Versione: 1.2
+Versione: 1.3
 Autore: Roberto Faccenda
 
 Flusso:
@@ -17,11 +17,12 @@ import os
 import asyncio
 import logging
 import base64
+import traceback
 from io import BytesIO
 
 from aiohttp import web as aiohttp_web
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import AsyncOpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -43,7 +44,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+openai_client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
 TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 PORT = int(os.environ.get("PORT", 8080))
 
@@ -105,15 +106,11 @@ async def analizza_oggetto(testo: str = None, immagine_bytes: bytes = None) -> s
     else:
         messages.append({"role": "user", "content": testo or "Analizza questo oggetto."})
 
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None,
-        lambda: openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.4,
-        )
+    response = await openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        max_tokens=1000,
+        temperature=0.4,
     )
     return response.choices[0].message.content
 
@@ -195,7 +192,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         logger.info(f"Analisi completata per utente {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Errore analisi foto: {e}")
+        logger.error(f"Errore analisi foto: {e}\n{traceback.format_exc()}")
         await msg.edit_text(
             "❌ Si è verificato un errore. Prova a inviare di nuovo la foto, "
             "oppure scrivimi una descrizione testuale dell'oggetto."
@@ -224,7 +221,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
     except Exception as e:
-        logger.error(f"Errore analisi testo: {e}")
+        logger.error(f"Errore analisi testo: {e}\n{traceback.format_exc()}")
         await msg.edit_text("❌ Si è verificato un errore. Riprova tra qualche secondo.")
 
 
