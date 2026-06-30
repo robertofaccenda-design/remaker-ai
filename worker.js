@@ -34,6 +34,15 @@ export default {
       });
     }
 
+    // ── /debug (temporaneo) ──────────────────────────────────────────────────
+    if (url.pathname === '/debug') {
+      return new Response(JSON.stringify({
+        hasKey: !!env.GEMINI_API_KEY,
+        keyLength: env.GEMINI_API_KEY?.length || 0,
+        envKeys: Object.keys(env).filter(k => k !== 'ASSETS')
+      }), { headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } });
+    }
+
     // ── /analyze ─────────────────────────────────────────────────────────────
     if (url.pathname === '/analyze' && request.method === 'POST') {
       if (!env.GEMINI_API_KEY) {
