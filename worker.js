@@ -67,6 +67,7 @@ export default {
       });
     }
 
-    return new Response('Not found', { status: 404, headers: CORS_HEADERS });
+    // ── File statici (index.html, remaker-test.html, ecc.) ──────────────────
+    return env.ASSETS.fetch(request);
   },
 };
