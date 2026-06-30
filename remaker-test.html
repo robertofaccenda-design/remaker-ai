@@ -1190,21 +1190,7 @@
         <div class="logo">Re<span>Maker</span> AI</div>
         <div class="tagline">Non buttare &nbsp;·&nbsp; Reinventa</div>
       </div>
-      <button class="btn-settings" id="btnSettings" title="Impostazioni API">⚙</button>
     </header>
-
-    <!-- API Key panel -->
-    <div class="api-panel" id="apiPanel">
-      <label>Gemini API Key</label>
-      <div class="api-row">
-        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off">
-        <button class="btn-save-api" onclick="saveApiKey()">Salva</button>
-      </div>
-      <div class="api-hint">
-        Chiave gratuita su <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>.
-        La chiave è salvata solo nel tuo browser.
-      </div>
-    </div>
 
     <!-- Hero -->
     <div class="hero">
@@ -1460,21 +1446,9 @@
     let imageMimeType = null;
     let currentListingText = '';
 
-    // ── API Key ─────────────────────────────────────────────────────────
-    // Chiave condivisa per il beta test — non condividere questo file pubblicamente
-    const SHARED_API_KEY = 'AQ.Ab8RN6ItxirFf7-9XR_pX3SB4pdFqU1HdFTvlF8Zo22MFNkEsA';
-
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
-      if (!key) return;
-      localStorage.setItem('rm_gemini_key', key);
-      showToast('✓ API Key salvata');
-      document.getElementById('apiPanel').classList.remove('open');
-    }
-
-    function getApiKey() {
-      return localStorage.getItem('rm_gemini_key') || SHARED_API_KEY;
-    }
+    // ── API proxy ────────────────────────────────────────────────────────
+    // La chiave Gemini è nel Cloudflare Worker — non esposta nel frontend.
+    const WORKER_URL = 'https://remaker-ai.roberto-faccenda.workers.dev/analyze';
 
     // ── Vinted ───────────────────────────────────────────────────────────
     let vintedText = '';
@@ -1633,15 +1607,6 @@
       }
     }
 
-    document.getElementById('btnSettings').addEventListener('click', () => {
-      const panel = document.getElementById('apiPanel');
-      panel.classList.toggle('open');
-      if (panel.classList.contains('open')) {
-        const saved = getApiKey();
-        if (saved) document.getElementById('apiKeyInput').value = saved;
-        document.getElementById('apiKeyInput').focus();
-      }
-    });
 
     // ── Mode toggle ─────────────────────────────────────────────────────
     function setMode(mode) {
@@ -1705,13 +1670,6 @@
 
     // ── Analyze ─────────────────────────────────────────────────────────
     async function analyze() {
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        document.getElementById('apiPanel').classList.add('open');
-        showError('Inserisci la tua Gemini API Key nelle impostazioni (⚙).');
-        return;
-      }
-
       const textVal = document.getElementById('textInput').value.trim();
       const hasImage = !!imageBase64;
       const hasText = !!textVal;
@@ -1784,15 +1742,14 @@ Valori per k: ottima, buona, discreta, da_riparare. Valori per i?c: vendi, dona,
 
       try {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              contents: [{ parts }],
-              generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 4096 }
-            })
-          }
-        );
+          WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 4096 }
+          })
+        });
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
