@@ -9,7 +9,7 @@
  */
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -34,6 +34,14 @@ export default {
       });
     }
 
+    // ── /debug (temporaneo) ──────────────────────────────────────────────────
+    if (url.pathname === '/debug') {
+      return new Response(JSON.stringify({
+        hasKey: !!env.GEMINI_API_KEY,
+        keyLength: env.GEMINI_API_KEY?.length || 0,
+        envKeys: Object.keys(env).filter(k => k !== 'ASSETS')
+      }), { headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } });
+    }
     // ── /analyze ─────────────────────────────────────────────────────────────
     if (url.pathname === '/analyze' && request.method === 'POST') {
       if (!env.GEMINI_API_KEY) {
@@ -67,6 +75,7 @@ export default {
       });
     }
 
-    return new Response('Not found', { status: 404, headers: CORS_HEADERS });
+    // ── File statici (index.html, remaker-test.html, ecc.) ──────────────────
+    return env.ASSETS.fetch(request);
   },
 };
