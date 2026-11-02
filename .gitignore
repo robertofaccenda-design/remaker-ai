@@ -9,3 +9,7 @@ remaker-bot/.env
 __pycache__/
 *.pyc
 *.pyo
+
+# File generati per il sito
+/dist/
+/.wrangler/
